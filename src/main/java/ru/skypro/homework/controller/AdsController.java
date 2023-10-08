@@ -1,8 +1,6 @@
 package ru.skypro.homework.controller;
 
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -13,18 +11,23 @@ import ru.skypro.homework.dto.AdsDto;
 import ru.skypro.homework.dto.CreateOrUpdateAdDto;
 import ru.skypro.homework.dto.ExtendedAdDto;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Slf4j
 @RestController
 @RequestMapping("ads/")
 public class AdsController {
 
-    private static final Logger log = LoggerFactory.getLogger(AdsController.class);
-
     @ResponseStatus(HttpStatus.OK)
     @GetMapping()
     public AdsDto getAllAds (){
         log.info("Activated getAllAds method.");
-        return new AdsDto();
+        AdsDto adsDto=new AdsDto();
+        ArrayList<AdDto> list=new ArrayList<>(List.of(new AdDto(),new AdDto(),new AdDto()));
+        adsDto.setResults(list);
+
+        return adsDto;
     }
 
     @ResponseStatus(HttpStatus.OK)
