@@ -11,6 +11,10 @@ import ru.skypro.homework.dto.AdsDto;
 import ru.skypro.homework.dto.CreateOrUpdateAdDto;
 import ru.skypro.homework.dto.ExtendedAdDto;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,13 +34,27 @@ public class AdsController {
         return adsDto;
     }
 
+
     @ResponseStatus(HttpStatus.OK)
-    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public AdDto addAd (@RequestParam CreateOrUpdateAdDto createOrUpdateAdDto,
-                        @RequestParam MultipartFile adWithImage){
+    @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE}, produces = MediaType.APPLICATION_JSON_VALUE)
+    public AdDto addAdd(@RequestPart("data") CreateOrUpdateAdDto createOrUpdateAdDto,
+                        @RequestPart("image") MultipartFile image) throws IOException {
+        AdDto adDto=new AdDto();
+        adDto.setTitle(createOrUpdateAdDto.getTitle());
+        adDto.setPrice(createOrUpdateAdDto.getPrice());
+        byte[] buffer = new byte[1024];
+        int length;
+        try( InputStream inputStream=image.getInputStream();
+             ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+            while ((length = inputStream.read(buffer)) != -1) {
+                outputStream.write(buffer, 0, length);
+            }
+            adDto.setImage(outputStream.toString(StandardCharsets.UTF_8));
+        }
         log.info("Activated addAd method.");
-        return new AdDto();
+        return adDto;
     }
+
 
     @ResponseStatus(HttpStatus.OK)
     @GetMapping(path = "{id}")
