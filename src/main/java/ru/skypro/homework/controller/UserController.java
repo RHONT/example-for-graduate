@@ -11,6 +11,7 @@ import ru.skypro.homework.dto.UserDto;
 
 @Slf4j
 @RestController
+@CrossOrigin(value = "http://localhost:3000")
 @RequestMapping("users/")
 public class UserController {
 
