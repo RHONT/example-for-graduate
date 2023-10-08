@@ -67,4 +67,5 @@ public class AdsController {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_OCTET_STREAM).body(updatedImageBytes);
     }
 
+
 }
