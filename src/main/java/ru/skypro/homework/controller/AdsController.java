@@ -1,6 +1,8 @@
 package ru.skypro.homework.controller;
 
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +17,8 @@ import ru.skypro.homework.dto.ExtendedAdDto;
 @RestController
 @RequestMapping("ads/")
 public class AdsController {
+
+    private static final Logger log = LoggerFactory.getLogger(AdsController.class);
 
     @ResponseStatus(HttpStatus.OK)
     @GetMapping()
@@ -32,7 +36,7 @@ public class AdsController {
     }
 
     @ResponseStatus(HttpStatus.OK)
-    @GetMapping()
+    @GetMapping(path = "{id}")
     public ExtendedAdDto getAds (@RequestParam Integer id){
         log.info("Activated getAds method.");
         return new ExtendedAdDto();
