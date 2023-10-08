@@ -3,37 +3,50 @@ package ru.skypro.homework.controller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ru.skypro.homework.dto.CommentDto;
 import ru.skypro.homework.dto.CommentsDto;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
 @CrossOrigin(value = "http://localhost:3000")
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/ads/{adId}/comments")
+@RequestMapping("/ads/")
 public class CommentController {
 
-    @GetMapping
-    public ResponseEntity<List<CommentsDto>> getComments(@PathVariable("id") long adId) {
-        return ResponseEntity.ok(List.of(new CommentsDto()));
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping(path = "{id}/comments")
+    public CommentsDto getComments(@PathVariable long id) {
+        ArrayList<CommentDto> listComments = new ArrayList<>(List.of(new CommentDto(), new CommentDto()));
+        CommentsDto commentsDto = new CommentsDto();
+        commentsDto.setResults(listComments);
+        return commentsDto;
     }
 
-    @PostMapping
-    public ResponseEntity<CommentsDto> addComment(@PathVariable("id") long adId, @RequestBody String text) {
-        return ResponseEntity.ok(new CommentsDto());
+    @ResponseStatus(HttpStatus.OK)
+    @PostMapping(path = "{id}/comments")
+    public CommentDto addComment(@PathVariable long id, @RequestBody String text) {
+        CommentDto commentDto = new CommentDto();
+        commentDto.setText(text);
+        return commentDto;
     }
 
-    @DeleteMapping("/{commentId}")
-    public ResponseEntity<Void> deleteComment(@PathVariable("adId") long adId, @PathVariable("commentId") long id) {
-        return new ResponseEntity<>(HttpStatus.OK);
+    @ResponseStatus(HttpStatus.OK)
+    @DeleteMapping(path = "{adId}/comments/{commentId}")
+    public void deleteComment(@PathVariable long adId, @PathVariable long commentId) {
+
     }
 
-    @PatchMapping("/{commentId}")
-    public ResponseEntity<CommentsDto> updateComment(@PathVariable("adId") long adId, @PathVariable("commentId") long Id,
-                                                 @RequestBody String text) {
-        return ResponseEntity.ok(new CommentsDto());
+    @ResponseStatus(HttpStatus.OK)
+    @PatchMapping("{adId}/comments/{commentId}")
+    public CommentDto updateComment(@PathVariable long adId,
+                                                     @PathVariable long commentId,
+                                                     @RequestBody String text) {
+        CommentDto commentDto = new CommentDto();
+        commentDto.setText(text);
+        return commentDto;
     }
 }
