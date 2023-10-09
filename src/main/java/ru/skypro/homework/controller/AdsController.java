@@ -33,10 +33,22 @@ public class AdsController {
         return adsDto;
     }
 
+//    @ResponseStatus(HttpStatus.OK)
+//    @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE}, produces = MediaType.APPLICATION_JSON_VALUE)
+//    public AdDto addAdd(@RequestPart("UpdateAdDto") CreateOrUpdateAdDto createOrUpdateAdDto,
+//                        @RequestPart("urlImage") String urlImage) {
+//        AdDto adDto = new AdDto();
+//        adDto.setTitle(createOrUpdateAdDto.getTitle());
+//        adDto.setPrice(createOrUpdateAdDto.getPrice());
+//        adDto.setImage(urlImage);
+//        log.info("Activated addAd method.");
+//        return adDto;
+//    }
+
     @ResponseStatus(HttpStatus.OK)
-    @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE}, produces = MediaType.APPLICATION_JSON_VALUE)
-    public AdDto addAdd(@RequestPart("UpdateAdDto") CreateOrUpdateAdDto createOrUpdateAdDto,
-                        @RequestPart("urlImage") String urlImage) {
+    @PostMapping()
+    public AdDto addAd(@ModelAttribute("UpdateAdDto") CreateOrUpdateAdDto createOrUpdateAdDto,
+                       @RequestParam("urlImage") String urlImage) {
         AdDto adDto = new AdDto();
         adDto.setTitle(createOrUpdateAdDto.getTitle());
         adDto.setPrice(createOrUpdateAdDto.getPrice());
