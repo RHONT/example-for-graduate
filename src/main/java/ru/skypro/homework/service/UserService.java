@@ -14,7 +14,7 @@ import java.io.IOException;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class UserServiceImpl {
+public class UserService {
     private final UsersRepository usersRepository;
 
     @Transactional
