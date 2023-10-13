@@ -46,8 +46,8 @@ public class AdsController {
 //    }
 
     @ResponseStatus(HttpStatus.OK)
-    @PostMapping()
-    public AdDto addAd(@ModelAttribute("UpdateAdDto") CreateOrUpdateAdDto createOrUpdateAdDto,
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public AdDto addAd(@RequestBody CreateOrUpdateAdDto createOrUpdateAdDto,
                        @RequestParam("urlImage") String urlImage) {
         AdDto adDto = new AdDto();
         adDto.setTitle(createOrUpdateAdDto.getTitle());
