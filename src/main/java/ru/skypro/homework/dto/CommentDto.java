@@ -10,6 +10,4 @@ public class CommentDto {
     private int createdAt;
     private Integer pk;
     private String text;
-
-
 }
