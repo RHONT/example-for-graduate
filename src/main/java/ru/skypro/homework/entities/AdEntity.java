@@ -43,7 +43,7 @@ public class AdEntity {
         if (this == o) return true;
         if (!(o instanceof AdEntity)) return false;
         AdEntity adEntity = (AdEntity) o;
-        return Objects.equals(pk, adEntity.pk) && Objects.equals(authorFirstName, adEntity.authorFirstName) && Objects.equals(authorLastName, adEntity.authorLastName) && Objects.equals(description, adEntity.description) && Objects.equals(email, adEntity.email) && Objects.equals(image, adEntity.image) && Objects.equals(phone, adEntity.phone) && Objects.equals(price, adEntity.price) && Objects.equals(title, adEntity.title) && Objects.equals(userId, adEntity.userId);
+        return Objects.equals(pk, adEntity.pk) && Objects.equals(authorFirstName, adEntity.authorFirstName) && Objects.equals(authorLastName, adEntity.authorLastName) && Objects.equals(description, adEntity.description) && Objects.equals(email, adEntity.email) && Objects.equals(image, adEntity.image) && Objects.equals(phone, adEntity.phone) && Objects.equals(price, adEntity.price) && Objects.equals(title, adEntity.title) && Objects.equals(author, adEntity.author);
     }
 
     @Override
