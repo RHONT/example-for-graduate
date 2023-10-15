@@ -48,6 +48,6 @@ public class AdEntity {
 
     @Override
     public int hashCode() {
-        return Objects.hash(pk, authorFirstName, authorLastName, description, email, image, phone, price, title, userId);
+        return Objects.hash(pk, authorFirstName, authorLastName, description, email, image, phone, price, title, author);
     }
 }
