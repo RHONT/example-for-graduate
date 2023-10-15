@@ -29,9 +29,10 @@ public class UserEntity {
     private String lastName;
     @Column(name = "phone")
     private String phone;
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "id_image")
-    private Image image;
+
+    @JoinColumn(name = "image")
+    @Lob
+    private byte[] image;
 
     @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"),
