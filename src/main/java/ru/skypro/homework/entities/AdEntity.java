@@ -35,7 +35,7 @@ public class AdEntity {
     private Integer price;
     @Column(name = "title")
     private String title;
-    @Column(name = "authorId")
+    @Column(name = "author")
     private Integer author;
 
     @Override
