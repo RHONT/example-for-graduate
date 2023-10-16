@@ -17,6 +17,7 @@ import ru.skypro.homework.dto.LoginDto;
 import ru.skypro.homework.dto.RegisterDto;
 import ru.skypro.homework.entities.Role;
 import ru.skypro.homework.entities.UserEntity;
+import ru.skypro.homework.mappers.UserMapper;
 import ru.skypro.homework.repository.RoleRepository;
 import ru.skypro.homework.repository.UsersRepository;
 
@@ -28,10 +29,12 @@ import java.util.Collections;
 @RequiredArgsConstructor
 public class AuthController {
 
+
     private final AuthenticationManager authManager;
     private final UsersRepository usersRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
+    private final UserMapper userMapper;
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginDto loginDto) {
@@ -54,11 +57,10 @@ public class AuthController {
         }
         Role role=roleRepository.findByName(registerDto.getRole()).get();
 
-        UserEntity user=new UserEntity();
-        user.setUsername(registerDto.getUsername());
+        UserEntity user=userMapper.registerDtoToUserEntity(registerDto);
+
         user.setPassword(passwordEncoder.encode(registerDto.getPassword()));
         user.setRoles(Collections.singletonList(role));
-
         usersRepository.save(user);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
