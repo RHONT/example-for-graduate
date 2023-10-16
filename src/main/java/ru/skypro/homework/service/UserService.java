@@ -41,8 +41,6 @@ public class UserService {
         usersRepository.save(user);
         return userMapper.userEntityToUpdateUserDTo(user);
 
-
-
     }
 
     public UserDto getInfoAboutUser(Authentication authentication) {
