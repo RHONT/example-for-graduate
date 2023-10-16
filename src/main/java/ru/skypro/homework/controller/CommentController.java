@@ -2,10 +2,13 @@ package ru.skypro.homework.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.tomcat.util.net.openssl.ciphers.Authentication;
+import org.springframework.boot.autoconfigure.neo4j.Neo4jProperties;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.skypro.homework.dto.CommentDto;
 import ru.skypro.homework.dto.CommentsDto;
+import ru.skypro.homework.service.CommentService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,6 +19,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @RequestMapping("/ads/")
 public class CommentController {
+    private final CommentService commentService;
 
     @ResponseStatus(HttpStatus.OK)
     @GetMapping(path = "{id}/comments")
@@ -29,9 +33,8 @@ public class CommentController {
     @ResponseStatus(HttpStatus.OK)
     @PostMapping(path = "{id}/comments")
     public CommentDto addComment(@PathVariable long id, @RequestBody String text) {
-        CommentDto commentDto = new CommentDto();
-        commentDto.setText(text);
-        return commentDto;
+
+        return commentService.addNewComment(id,text);
     }
 
     @ResponseStatus(HttpStatus.OK)

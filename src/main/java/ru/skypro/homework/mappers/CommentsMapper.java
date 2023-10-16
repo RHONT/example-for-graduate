@@ -4,6 +4,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
 import org.springframework.stereotype.Component;
 import ru.skypro.homework.dto.CommentDto;
+import ru.skypro.homework.dto.CreateOrUpdateComment;
 import ru.skypro.homework.entities.CommentEntity;
 
 @Component
@@ -15,5 +16,8 @@ public interface CommentsMapper {
     CommentEntity commentDtoTocommentEntity (CommentDto commentDto);
 
     CommentDto commentEntityToCommentDto (CommentEntity commentEntity);
+
+    CreateOrUpdateComment commEntityToCrOrUpdComment (CommentEntity commentEntity);
+    CommentEntity crOrUpdCommentToCommEntity (CreateOrUpdateComment createOrUpdateComment);
 
 }
