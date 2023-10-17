@@ -9,7 +9,6 @@ public class UserDto {
     private String firstName;
     private String lastName;
     private String phone;
-    private Role role;
-    private byte[] image;
-
+    private String role;
+    private String image;
 }

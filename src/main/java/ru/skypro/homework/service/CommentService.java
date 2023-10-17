@@ -6,17 +6,26 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.skypro.homework.dto.CommentDto;
 import ru.skypro.homework.dto.CommentsDto;
+import ru.skypro.homework.entities.AdEntity;
 import ru.skypro.homework.entities.CommentEntity;
+import ru.skypro.homework.entities.UserEntity;
+import ru.skypro.homework.exceptions.NoAdException;
 import ru.skypro.homework.mappers.CommentsMapper;
+import ru.skypro.homework.repository.AdsRepository;
 import ru.skypro.homework.repository.CommentsRepository;
+import ru.skypro.homework.repository.UsersRepository;
+
 import java.util.ArrayList;
+import java.util.Optional;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class CommentService {
     private final CommentsRepository commentsRepository;
+    private final UsersRepository usersRepository;
     private final CommentsMapper commentsMapper;
+    private final AdsRepository adsRepository;
 
     public CommentDto addNewComment(long id, String text) {
         CommentDto commentDto = new CommentDto();
@@ -32,15 +41,24 @@ public class CommentService {
         commentsRepository.deleteByCreatedAtAndCommentId(adId, commentId);
     }
 
-    public CommentDto updateComment(Integer adId, Integer commentId, String text) {
-        CommentEntity comment = commentsRepository.findCommentEntitiesByAuthorAfterAndCommentId(adId,commentId);
-        comment.setText(text);
-        commentsRepository.save(comment);
-        return commentsMapper.commentEntityToCommentDto(comment);
+    public CommentDto updateComment(Integer adId, Integer commentId, String text)  {
+
+        Optional<AdEntity> adEntity= adsRepository.findById(adId);
+        Optional<CommentEntity>  commentEntity = Optional.of(new CommentEntity());
+        if (adEntity.isPresent()) {
+            commentEntity=commentsRepository.findById(commentId);
+            if (commentEntity.isPresent()) {
+                commentEntity.get().setText(text);
+                commentsRepository.save(commentEntity.get());
+            }
+        } else throw new NoAdException("Объявления с номером " + adId + "не существует");
+
+        return commentsMapper.commentEntityToCommentDto(commentEntity.get());
     }
 
     public CommentsDto getCommentsByAuthorId(Integer id) {
-        ArrayList<CommentEntity> commentsList = commentsRepository.findCommentEntitiesByAuthor(id);
+        UserEntity user=usersRepository.findById(id).get();
+        ArrayList<CommentEntity> commentsList = commentsRepository.findCommentEntitiesByUserEntity(user);
         ArrayList<CommentDto> commentDtos = new ArrayList<>();
         commentsList.forEach(commentEntity -> {
             CommentDto commentDto = commentsMapper.commentEntityToCommentDto(commentEntity);

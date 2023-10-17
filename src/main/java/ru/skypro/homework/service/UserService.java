@@ -23,7 +23,7 @@ public class UserService {
     private final UserMapper userMapper;
 
     @Transactional
-    public void uploadAvatar(MultipartFile file, Long idUser) throws IOException {
+    public void uploadAvatar(MultipartFile file, Integer idUser) throws IOException {
         log.info("method uploadAvatar is run");
 
         UserEntity userEntity =usersRepository.findById(idUser).get();

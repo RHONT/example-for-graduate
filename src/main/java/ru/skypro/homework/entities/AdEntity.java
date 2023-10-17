@@ -4,8 +4,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import org.hibernate.proxy.HibernateProxy;
 
 import javax.persistence.*;
+import java.util.List;
 import java.util.Objects;
 
 @Entity
@@ -17,37 +19,44 @@ import java.util.Objects;
 public class AdEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "pk")
+    @Column(name = "pk")  // id_ad
     private Integer pk;
-    @Column(name = "authorFirstName")
-    private String authorFirstName;
-    @Column(name = "authorLastName")
-    private String authorLastName;
-    @Column(name = "description")
-    private String description;
-    @Column(name = "email")
-    private String email;
-    @Column(name = "image")
-    private String image;
-    @Column(name = "phone")
-    private String phone;
-    @Column(name = "price")
-    private Integer price;
+
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "id_image")
+    private ImageEntity imageEntity;
+
     @Column(name = "title")
     private String title;
-    @Column(name = "author")
-    private Integer author;
+
+    @Column(name = "price")
+    private Integer price;
+
+    @Column(name = "description")
+    private String description;
+
+    @ToString.Exclude
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JoinColumn(name = "comment_id")
+    List<CommentEntity> commentEntityList;
+
+    @ManyToOne
+    @JoinColumn(name = "id")
+    UserEntity author;
 
     @Override
-    public boolean equals(Object o) {
+    public final boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof AdEntity)) return false;
+        if (o == null) return false;
+        Class<?> oEffectiveClass = o instanceof HibernateProxy ? ((HibernateProxy) o).getHibernateLazyInitializer().getPersistentClass() : o.getClass();
+        Class<?> thisEffectiveClass = this instanceof HibernateProxy ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass() : this.getClass();
+        if (thisEffectiveClass != oEffectiveClass) return false;
         AdEntity adEntity = (AdEntity) o;
-        return Objects.equals(pk, adEntity.pk) && Objects.equals(authorFirstName, adEntity.authorFirstName) && Objects.equals(authorLastName, adEntity.authorLastName) && Objects.equals(description, adEntity.description) && Objects.equals(email, adEntity.email) && Objects.equals(image, adEntity.image) && Objects.equals(phone, adEntity.phone) && Objects.equals(price, adEntity.price) && Objects.equals(title, adEntity.title) && Objects.equals(author, adEntity.author);
+        return getPk() != null && Objects.equals(getPk(), adEntity.getPk());
     }
 
     @Override
-    public int hashCode() {
-        return Objects.hash(pk, authorFirstName, authorLastName, description, email, image, phone, price, title, author);
+    public final int hashCode() {
+        return this instanceof HibernateProxy ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass().hashCode() : getClass().hashCode();
     }
 }
