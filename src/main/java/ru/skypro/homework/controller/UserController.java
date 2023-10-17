@@ -31,7 +31,6 @@ public class UserController {
     @ResponseStatus(HttpStatus.OK)
     @GetMapping(path = "me")
     public UserDto infoAboutAuthUser(Authentication authentication) {
-
         return userService.getInfoAboutUser(authentication);
     }
 
