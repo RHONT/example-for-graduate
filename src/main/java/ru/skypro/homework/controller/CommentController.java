@@ -23,33 +23,29 @@ public class CommentController {
 
     @ResponseStatus(HttpStatus.OK)
     @GetMapping(path = "{id}/comments")
-    public CommentsDto getComments(@PathVariable long id) {
-        ArrayList<CommentDto> listComments = new ArrayList<>(List.of(new CommentDto(), new CommentDto()));
-        CommentsDto commentsDto = new CommentsDto();
-        commentsDto.setResults(listComments);
-        return commentsDto;
+    public CommentsDto getComments(@PathVariable Integer id) {
+        return commentService.getCommentsByAuthorId(id);
     }
 
     @ResponseStatus(HttpStatus.OK)
     @PostMapping(path = "{id}/comments")
-    public CommentDto addComment(@PathVariable long id, @RequestBody String text) {
+    public CommentDto addComment(@PathVariable Integer id, @RequestBody String text) {
 
         return commentService.addNewComment(id,text);
     }
 
     @ResponseStatus(HttpStatus.OK)
     @DeleteMapping(path = "{adId}/comments/{commentId}")
-    public void deleteComment(@PathVariable long adId, @PathVariable long commentId) {
-
+    public void deleteComment(@PathVariable Integer adId, @PathVariable Integer commentId) {
+        commentService.deleteComment(adId,commentId);
     }
 
     @ResponseStatus(HttpStatus.OK)
     @PatchMapping("{adId}/comments/{commentId}")
-    public CommentDto updateComment(@PathVariable long adId,
-                                                     @PathVariable long commentId,
+    public CommentDto updateComment(@PathVariable Integer adId,
+                                                     @PathVariable Integer commentId,
                                                      @RequestBody String text) {
-        CommentDto commentDto = new CommentDto();
-        commentDto.setText(text);
-        return commentDto;
+
+        return commentService.updateComment(adId, commentId, text);
     }
 }

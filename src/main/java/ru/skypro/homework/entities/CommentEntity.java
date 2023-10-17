@@ -20,7 +20,7 @@ import java.util.Objects;
 public class CommentEntity {
     @Id
     @Column(name = "commentId")
-    private Long commentId;
+    private Integer commentId;
     @Column(name = "author")
     private Integer author;
     @Column(name = "authorImage")
