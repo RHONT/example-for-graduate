@@ -2,7 +2,6 @@ package ru.skypro.homework.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.autoconfigure.neo4j.Neo4jProperties;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -16,8 +15,6 @@ import ru.skypro.homework.dto.ExtendedAdDto;
 import ru.skypro.homework.service.AdService;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 @Slf4j
 @RestController
@@ -32,31 +29,17 @@ public class AdsController {
     @GetMapping()
     public AdsDto getAllAds() {
         log.info("Activated getAllAds method.");
-        AdsDto adsDto = new AdsDto();
-        ArrayList<AdDto> list = new ArrayList<>(List.of(new AdDto(), new AdDto(), new AdDto()));
-        adsDto.setResults(list);
-
-        return adsDto;
+        return adService.findAllAds();
     }
 
     @ResponseStatus(HttpStatus.OK)
     @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE}, produces = MediaType.APPLICATION_JSON_VALUE)
-    public AdDto addAdd(@RequestPart("UpdateAdDto") CreateOrUpdateAdDto createOrUpdateAdDto,
+    public AdDto addAd(@RequestPart("UpdateAdDto") CreateOrUpdateAdDto createOrUpdateAdDto,
                         @RequestPart("urlImage") String urlImage) {
+        log.info("Activated addAd method.");
         return adService.createOrUpdateAd(createOrUpdateAdDto, urlImage);
     }
 
-    @ResponseStatus(HttpStatus.OK)
-    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public AdDto addAd(@RequestBody CreateOrUpdateAdDto createOrUpdateAdDto,
-                       @RequestParam("urlImage") String urlImage) {
-        AdDto adDto = new AdDto();
-        adDto.setTitle(createOrUpdateAdDto.getTitle());
-        adDto.setPrice(createOrUpdateAdDto.getPrice());
-        adDto.setImage(urlImage);
-        log.info("Activated addAd method.");
-        return adDto;
-    }
 
     //Получение информации об объявлении
     @ResponseStatus(HttpStatus.OK)

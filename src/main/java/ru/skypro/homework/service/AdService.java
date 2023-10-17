@@ -13,9 +13,7 @@ import ru.skypro.homework.entities.UserEntity;
 import ru.skypro.homework.mappers.AdsMapper;
 import ru.skypro.homework.repository.AdsRepository;
 import ru.skypro.homework.repository.UsersRepository;
-
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 @Slf4j
@@ -53,16 +51,31 @@ public class AdService {
     }
 
     public AdsDto findMyAds(Authentication authentication) {
-//        String username = authentication.getName();
-//        UserEntity user = usersRepository.findByUsername(username).orElse(null);
-//        Optional<AdEntity> adsList = adsRepository.findAllByAuthor(user.getId());
+        String username = authentication.getName();
+        UserEntity user = usersRepository.findByUsername(username).orElse(null);
+        ArrayList<AdEntity> myAds = adsRepository.findAdEntitiesByAuthor(user.getId().intValue());
+        ArrayList<AdDto> myTempAdsDto = new ArrayList<>();
+        myAds.forEach(adEntity -> {
+            AdDto adDto = adsMapper.adEntityToAdDto(adEntity);
+            myTempAdsDto.add(adDto);
+        });
+        AdsDto myAdsDto = new AdsDto();
+        myAdsDto.setResults(myTempAdsDto);
+        myAdsDto.setCount(myTempAdsDto.size());
+        return myAdsDto;
 //
-//        List<AdDto> ads2 = new ArrayList<>();
-////        adsList.forEach(adEntity -> ads2.add(adsMapper.adEntityToAdDto(adEntity)));
-        AdsDto myAds = new AdsDto();
-//        myAds.setResults((ArrayList<AdDto>) ads2);
-//        myAds.setCount(ads2.size());
-        return myAds;
-//
+    }
+
+    public AdsDto findAllAds() {
+        ArrayList<AdEntity> ads = adsRepository.findAll();
+        ArrayList<AdDto> ads2 = new ArrayList<>();
+        ads.forEach(adEntity -> {
+            AdDto adDto = adsMapper.adEntityToAdDto(adEntity);
+            ads2.add(adDto);
+        });
+        AdsDto adsDto = new AdsDto();
+        adsDto.setResults(ads2);
+        adsDto.setCount(ads2.size());
+        return adsDto;
     }
 }
