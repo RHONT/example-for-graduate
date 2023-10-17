@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import ru.skypro.homework.dto.UpdateUserDto;
 import ru.skypro.homework.dto.UserDto;
+import ru.skypro.homework.entities.ImageEntity;
 import ru.skypro.homework.entities.UserEntity;
 import ru.skypro.homework.mappers.UserMapper;
 import ru.skypro.homework.repository.UsersRepository;
@@ -26,12 +27,12 @@ public class UserService {
         log.info("method uploadAvatar is run");
 
         UserEntity userEntity =usersRepository.findById(idUser).get();
-//        Image image=new Image();
-//        image.setData(file.getBytes());
-//        image.setFileSize(file.getSize());
-//        image.setMediaType(file.getContentType());
+        ImageEntity image=new ImageEntity();
+        image.setData(file.getBytes());
+        image.setFileSize(file.getSize());
+        image.setMediaType(file.getContentType());
 
-        userEntity.setImage(file.getBytes());
+        userEntity.setImageEntity(image);
         usersRepository.save(userEntity);
     }
 

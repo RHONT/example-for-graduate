@@ -19,15 +19,15 @@ import java.util.Objects;
 @Table(name = "comments")
 public class CommentEntity {
     @Id
-    @Column(name = "commentId")
+    @Column(name = "comment_id")
     private Integer commentId;
     @Column(name = "author")
     private Integer author;
-    @Column(name = "authorImage")
+    @Column(name = "author_image")
     private String authorImage;
-    @Column(name = "authorFirstName")
+    @Column(name = "author_first_name")
     private String authorFirstName;
-    @Column(name = "createdAt")
+    @Column(name = "created_at")
     private Integer createdAt;
     @Column(name = "pk")
     private Integer pk;
