@@ -6,6 +6,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import ru.skypro.homework.dto.AdDto;
@@ -34,10 +36,11 @@ public class AdsController {
 
     @ResponseStatus(HttpStatus.OK)
     @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE}, produces = MediaType.APPLICATION_JSON_VALUE)
-    public AdDto addAd(@RequestPart("UpdateAdDto") CreateOrUpdateAdDto createOrUpdateAdDto,
-                        @RequestPart("urlImage") String urlImage) {
+    public AdDto addAd(@RequestBody CreateOrUpdateAdDto createOrUpdateAdDto,
+                        @RequestParam("image ") MultipartFile file,
+                       @AuthenticationPrincipal UserDetails userDetails) throws IOException {
         log.info("Activated addAd method.");
-        return adService.createOrUpdateAd(createOrUpdateAdDto, urlImage);
+        return adService.adAd(createOrUpdateAdDto, file,userDetails);
     }
 
 

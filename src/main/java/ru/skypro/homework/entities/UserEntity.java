@@ -18,7 +18,7 @@ public class UserEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    private Long id;
+    private Integer id;
 
     @Column(name = "username")
     private String username;
@@ -39,13 +39,21 @@ public class UserEntity {
     @JoinColumn(name = "id_image")
     private ImageEntity imageEntity;
 
+    @ToString.Exclude
     @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"),
     inverseJoinColumns = @JoinColumn(name = "role_id", referencedColumnName = "id"))
     private List<Role> roles=new ArrayList<>();
 
-//    @OneToMany(cascade = CascadeType.ALL)
-//    @JoinColumn(name = )
+    @ToString.Exclude
+    @OneToMany(cascade = CascadeType.ALL)
+    @JoinColumn(name ="pk")
+    List<AdEntity> adEntityList;
+
+    @ToString.Exclude
+    @OneToMany(cascade = CascadeType.ALL)
+    @JoinColumn(name ="comment_id")
+    List<CommentEntity> commentEntityList;
 
 
     @Override
@@ -55,8 +63,8 @@ public class UserEntity {
         Class<?> oEffectiveClass = o instanceof HibernateProxy ? ((HibernateProxy) o).getHibernateLazyInitializer().getPersistentClass() : o.getClass();
         Class<?> thisEffectiveClass = this instanceof HibernateProxy ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass() : this.getClass();
         if (thisEffectiveClass != oEffectiveClass) return false;
-        UserEntity userEntity = (UserEntity) o;
-        return getId() != null && Objects.equals(getId(), userEntity.getId());
+        UserEntity user = (UserEntity) o;
+        return getId() != null && Objects.equals(getId(), user.getId());
     }
 
     @Override

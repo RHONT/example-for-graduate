@@ -18,7 +18,7 @@ public class ImageEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_image")
-    private Long id;
+    private Integer id;
 
     @Column(name = "path_to_file")
     String filePath;

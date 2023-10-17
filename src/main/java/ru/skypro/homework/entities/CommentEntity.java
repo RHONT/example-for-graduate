@@ -4,11 +4,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import org.hibernate.proxy.HibernateProxy;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.util.Objects;
 
 @Entity
@@ -21,29 +19,34 @@ public class CommentEntity {
     @Id
     @Column(name = "comment_id")
     private Integer commentId;
-    @Column(name = "author")
-    private Integer author;
-    @Column(name = "author_image")
-    private String authorImage;
-    @Column(name = "author_first_name")
-    private String authorFirstName;
+
     @Column(name = "created_at")
     private Integer createdAt;
-    @Column(name = "pk")
-    private Integer pk;
+
     @Column(name = "text")
     private String text;
 
+    @ManyToOne
+    @JoinColumn(name = "pk")
+    AdEntity adEntity;
+
+    @ManyToOne
+    @JoinColumn(name = "id")
+    UserEntity userEntity;
+
     @Override
-    public boolean equals(Object o) {
+    public final boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof CommentEntity)) return false;
+        if (o == null) return false;
+        Class<?> oEffectiveClass = o instanceof HibernateProxy ? ((HibernateProxy) o).getHibernateLazyInitializer().getPersistentClass() : o.getClass();
+        Class<?> thisEffectiveClass = this instanceof HibernateProxy ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass() : this.getClass();
+        if (thisEffectiveClass != oEffectiveClass) return false;
         CommentEntity that = (CommentEntity) o;
-        return Objects.equals(commentId, that.commentId) && Objects.equals(author, that.author) && Objects.equals(authorImage, that.authorImage) && Objects.equals(authorFirstName, that.authorFirstName) && Objects.equals(createdAt, that.createdAt) && Objects.equals(pk, that.pk) && Objects.equals(text, that.text);
+        return getCommentId() != null && Objects.equals(getCommentId(), that.getCommentId());
     }
 
     @Override
-    public int hashCode() {
-        return Objects.hash(commentId, author, authorImage, authorFirstName, createdAt, pk, text);
+    public final int hashCode() {
+        return this instanceof HibernateProxy ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass().hashCode() : getClass().hashCode();
     }
 }
