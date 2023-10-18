@@ -6,6 +6,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import ru.skypro.homework.dto.AdDto;
 import ru.skypro.homework.dto.AdsDto;
@@ -31,6 +32,7 @@ public class AdService {
     private final UsersRepository usersRepository;
     private final ImageService imageService;
 
+    @Transactional
     public AdDto adAd(CreateOrUpdateAdDto createOrUpdateAdDto,
                       MultipartFile file,
                       UserDetails userDetails) throws IOException {
