@@ -15,7 +15,7 @@ import ru.skypro.homework.entities.UserEntity;
 public interface UserMapper {
     UserMapper INSTANCE = Mappers.getMapper(UserMapper.class);
 
-    @Mapping(source = "imageEntity.filePath",target = "image", defaultValue = "/image/download/?id=5")
+    @Mapping(source = "imageEntity.filePath",target = "image")
     @Mapping(target = "role", expression = "java(user.getRoles().get(0).getName())")
     @Mapping(target = "email",source = "username")
     UserDto userEntityToUserDto(UserEntity user);
