@@ -1,5 +1,6 @@
 package ru.skypro.homework.controller;
 
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -36,6 +37,7 @@ public class AdsController {
     public AdDto addAd(@RequestPart(name = "properties") CreateOrUpdateAdDto properties,
                        @RequestPart(name = "image") MultipartFile file,
                        @AuthenticationPrincipal UserDetails userDetails) throws IOException {
+
         log.info("Activated addAd method.");
         return adService.adAd(properties, file, userDetails);
     }

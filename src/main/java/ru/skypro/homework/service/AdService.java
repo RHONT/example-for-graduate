@@ -17,6 +17,7 @@ import ru.skypro.homework.entities.ImageEntity;
 import ru.skypro.homework.entities.UserEntity;
 import ru.skypro.homework.mappers.AdsMapper;
 import ru.skypro.homework.repository.AdsRepository;
+import ru.skypro.homework.repository.ImageRepository;
 import ru.skypro.homework.repository.UsersRepository;
 
 import java.io.IOException;
@@ -31,18 +32,20 @@ public class AdService {
     private final AdsMapper adsMapper;
     private final UsersRepository usersRepository;
     private final ImageService imageService;
+    private final ImageRepository imageRepository;
 
-    @Transactional
+    //    @Transactional
     public AdDto adAd(CreateOrUpdateAdDto createOrUpdateAdDto,
                       MultipartFile file,
                       UserDetails userDetails) throws IOException {
 
         Optional<UserEntity> user = usersRepository.findByUsername(userDetails.getUsername());
-        AdEntity ad = adsMapper.updateAdDtoToAdEntity(createOrUpdateAdDto);
         ImageEntity image = imageService.goImageToBD(file);
-        ad.setAuthor(user.get());
+        AdEntity ad = adsMapper.updateAdDtoToAdEntity(createOrUpdateAdDto);
         ad.setImageEntity(image);
+        ad.setAuthor(user.get());
         adsRepository.save(ad);
+
         return adsMapper.adEntityToAdDto(ad);
     }
 

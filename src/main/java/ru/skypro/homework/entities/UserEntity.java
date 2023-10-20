@@ -13,6 +13,7 @@ import java.util.Objects;
 @Getter
 @ToString
 @NoArgsConstructor
+
 @Table(name = "users")
 public class UserEntity {
     @Id
@@ -46,13 +47,11 @@ public class UserEntity {
     private List<Role> roles=new ArrayList<>();
 
     @ToString.Exclude
-    @OneToMany(cascade = CascadeType.ALL)
-    @JoinColumn(name ="pk")
+    @OneToMany(mappedBy = "author",cascade = CascadeType.ALL)
     List<AdEntity> adEntityList;
 
     @ToString.Exclude
-    @OneToMany(cascade = CascadeType.ALL)
-    @JoinColumn(name ="comment_id")
+    @OneToMany(mappedBy = "userEntity",cascade = CascadeType.ALL)
     List<CommentEntity> commentEntityList;
 
 
@@ -70,5 +69,12 @@ public class UserEntity {
     @Override
     public final int hashCode() {
         return this instanceof HibernateProxy ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass().hashCode() : getClass().hashCode();
+    }
+
+    public void addAdToList(AdEntity adEntity){
+        if (adEntityList==null) {
+            adEntityList=new ArrayList<>();
+        }
+        adEntityList.add(adEntity);
     }
 }
