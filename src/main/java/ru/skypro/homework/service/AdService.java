@@ -22,6 +22,7 @@ import ru.skypro.homework.repository.UsersRepository;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Slf4j
@@ -80,18 +81,14 @@ public class AdService {
         myAdsDto.setResults(myTempAdsDto);
         myAdsDto.setCount(myTempAdsDto.size());
         return myAdsDto;
-//
+
     }
 
     public AdsDto findAllAds() {
         ArrayList<AdEntity> ads = adsRepository.findAll();
-        ArrayList<AdDto> ads2 = new ArrayList<>();
-        ads.forEach(adEntity -> {
-            AdDto adDto = adsMapper.adEntityToAdDto(adEntity);
-            ads2.add(adDto);
-        });
+        List<AdDto> ads2 = adsMapper.ListAdToListDto(ads);
         AdsDto adsDto = new AdsDto();
-        adsDto.setResults(ads2);
+        adsDto.setResults((ArrayList<AdDto>) ads2);
         adsDto.setCount(ads2.size());
         return adsDto;
     }

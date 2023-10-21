@@ -7,10 +7,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.transaction.annotation.Transactional;
+
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import ru.skypro.homework.dto.AdDto;
+import ru.skypro.homework.dto.AdsDto;
 import ru.skypro.homework.dto.CreateOrUpdateAdDto;
 import ru.skypro.homework.service.AdService;
 
@@ -25,13 +26,20 @@ public class AdsController {
     private final AdService adService;
 
 
-//    @ResponseStatus(HttpStatus.OK)
-//    @GetMapping()
-//    public AdsDto getAllAds() {
-//        log.info("Activated getAllAds method.");
-//        return adService.findAllAds();
-//    }
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping()
+    public AdsDto getAllAds() {
+        log.info("Activated getAllAds method.");
+        return adService.findAllAds();
+    }
 
+    /**
+     * @param properties  - данные о товаре. DTO CreateOrUpdateAdDto - title, price, decsription
+     * @param file - загружаемая картинка товара
+     * @param userDetails - данные о том, куда класть объявления берутся из spring security
+     * @return - Возвращаем DTO AdDto
+     * @throws IOException
+     */
     @ResponseStatus(HttpStatus.OK)
     @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public AdDto addAd(@RequestPart(name = "properties") CreateOrUpdateAdDto properties,
