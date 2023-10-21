@@ -29,6 +29,11 @@ public interface AdsMapper {
     AdEntity adDtoToEntity (AdDto adDto);
 
 
+    @Mapping(target = "email", source = "author.username")
+    @Mapping(target = "phone", source = "author.phone")
+    @Mapping(target = "authorFirstName", source = "author.firstName")
+    @Mapping(target = "authorLastName", source = "author.lastName")
+    @Mapping(target = "image", source = "imageEntity.filePath")
     ExtendedAdDto adEntityToExAdDto (AdEntity adEntity);
 
     AdEntity adDtoToEntity (ExtendedAdDto extendedAdDto);

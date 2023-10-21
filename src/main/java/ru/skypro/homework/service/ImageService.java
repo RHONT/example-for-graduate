@@ -17,12 +17,14 @@ public class ImageService {
     private final ImageRepository imageRepository;
 
     public ImageEntity goImageToBD(MultipartFile file) throws IOException {
+        String source="id-image/";
         String extension = getExtension(Objects.requireNonNull(file.getOriginalFilename()));
 
         ImageEntity image = new ImageEntity();
         image.setData(file.getBytes());
         image.setMediaType(file.getContentType());
         image.setFileSize(file.getSize());
+        image.setFilePath(source);
 
         return image;
     }

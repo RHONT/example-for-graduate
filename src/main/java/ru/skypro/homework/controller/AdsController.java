@@ -1,6 +1,5 @@
 package ru.skypro.homework.controller;
 
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -12,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import ru.skypro.homework.dto.AdDto;
 import ru.skypro.homework.dto.AdsDto;
+import ru.skypro.homework.dto.ExtendedAdDto;
 import ru.skypro.homework.dto.CreateOrUpdateAdDto;
 import ru.skypro.homework.service.AdService;
 
@@ -25,7 +25,10 @@ import java.io.IOException;
 public class AdsController {
     private final AdService adService;
 
-
+    /**
+     * Возвращаем все объявления, что есть в базе
+     * @return
+     */
     @ResponseStatus(HttpStatus.OK)
     @GetMapping()
     public AdsDto getAllAds() {
@@ -51,13 +54,17 @@ public class AdsController {
     }
 
 
-    //Получение информации об объявлении
-//    @ResponseStatus(HttpStatus.OK)
-//    @GetMapping(path = "{id}")
-//    public ExtendedAdDto getInfoAboutAd(@PathVariable Integer id) {
-//        log.info("Activated getAds method.");
-//        return adService.findInfoAboutAd(id);
-//    }
+    /**
+     *     Получение информации об объявлении
+     * @param id - идентификатор объявления
+     * @return
+     */
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping(path = "{id}")
+    public ExtendedAdDto getInfoAboutAd(@PathVariable Integer id) {
+        log.info("Activated getAds method.");
+        return adService.findInfoAboutAd(id);
+    }
 //
 //
 //    @ResponseStatus(HttpStatus.OK)

@@ -15,6 +15,7 @@ import ru.skypro.homework.dto.ExtendedAdDto;
 import ru.skypro.homework.entities.AdEntity;
 import ru.skypro.homework.entities.ImageEntity;
 import ru.skypro.homework.entities.UserEntity;
+import ru.skypro.homework.exceptions.NoAdException;
 import ru.skypro.homework.mappers.AdsMapper;
 import ru.skypro.homework.repository.AdsRepository;
 import ru.skypro.homework.repository.ImageRepository;
@@ -52,8 +53,12 @@ public class AdService {
 
     public ExtendedAdDto findInfoAboutAd(Integer id) {
         Optional<AdEntity> optionalAd = adsRepository.findById(id);
-        AdEntity ad = optionalAd.get();
-        return adsMapper.adEntityToExAdDto(ad);
+        if (optionalAd.isPresent()) {
+            return adsMapper.adEntityToExAdDto(optionalAd.get());
+        } else {
+            log.debug("Ad with id = {} not found", id);
+            throw new NoAdException("Ad with id =" + id + "not found");
+        }
     }
 
     public void deleteAdEntity(Integer id) {
