@@ -27,11 +27,10 @@ public class CommentService {
     private final CommentsMapper commentsMapper;
     private final AdsRepository adsRepository;
 
-    public CommentDto addNewComment(long id, String text) {
+    public CommentDto addNewComment(Integer id, String text) {
         CommentDto commentDto = new CommentDto();
-        Integer newId = Math.toIntExact(id);
         commentDto.setText(text);
-        commentDto.setCreatedAt(newId);
+        commentDto.setCreatedAt(id);
         commentsRepository.save(commentsMapper.commentDtoTocommentEntity(commentDto));
         return commentDto;
     }
