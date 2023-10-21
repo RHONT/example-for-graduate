@@ -3,6 +3,7 @@ package ru.skypro.homework.mappers;
 import org.mapstruct.InheritInverseConfiguration;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
 import org.mapstruct.factory.Mappers;
 import org.springframework.stereotype.Component;
 import ru.skypro.homework.dto.AdDto;
@@ -18,7 +19,10 @@ import java.util.List;
 public interface AdsMapper {
     AdsMapper INSTANCE = Mappers.getMapper(AdsMapper.class);
 
-    AdEntity updateAdDtoToAdEntity(CreateOrUpdateAdDto createOrUpdateAdDto);
+    AdEntity updateAdDtoToAdEntity(CreateOrUpdateAdDto createOrUpdateAdDto, @MappingTarget AdEntity adEntity);
+
+
+
     CreateOrUpdateAdDto adEntityToCrOrUpdAdDto (AdEntity adEntity);
 
     @Mapping(source = "author.id", target = "author")

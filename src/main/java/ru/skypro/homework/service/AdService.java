@@ -38,9 +38,9 @@ public class AdService {
     private final ImageRepository imageRepository;
 
     /**
-     * @param properties  - данные о товаре. DTO CreateOrUpdateAdDto - title, price, decsription
-     * @param file - загружаемая картинка товара
-     * @param userDetails - данные о том, куда класть объявления берутся из spring security
+     * @param createOrUpdateAdDto - данные о товаре. title, price, decsription
+     * @param file                - загружаемая картинка товара
+     * @param userDetails         - данные о том, куда класть объявления берутся из spring security
      * @return - Возвращаем DTO AdDto
      * @throws IOException
      */
@@ -50,7 +50,8 @@ public class AdService {
 
         Optional<UserEntity> user = usersRepository.findByUsername(userDetails.getUsername());
         ImageEntity image = imageService.goImageToBD(file);
-        AdEntity ad = adsMapper.updateAdDtoToAdEntity(createOrUpdateAdDto);
+        AdEntity ad = new AdEntity();
+        adsMapper.updateAdDtoToAdEntity(createOrUpdateAdDto, ad);
         ad.setImageEntity(image);
         ad.setAuthor(user.get());
         adsRepository.save(ad);
@@ -60,6 +61,7 @@ public class AdService {
 
     /**
      * Получение информации об объявлении
+     *
      * @param id - идентификатор объявления
      * @return
      */
@@ -75,14 +77,15 @@ public class AdService {
 
     /**
      * Удаляем выбранное объявление
+     *
      * @param id
      */
     public void deleteAdEntity(Integer id) {
-        Optional<AdEntity> ad=adsRepository.findById(id);
+        Optional<AdEntity> ad = adsRepository.findById(id);
         if (ad.isPresent()) {
 
             adsRepository.deleteById(id);
-            Optional<AdEntity> checkAd=adsRepository.findById(id);
+            Optional<AdEntity> checkAd = adsRepository.findById(id);
 
             if (checkAd.isEmpty()) {
                 log.info("Ad with id={}, successfully deleted", id);
@@ -97,10 +100,14 @@ public class AdService {
 
     public AdDto updateAd(Integer id, CreateOrUpdateAdDto updateAdDto) {
         Optional<AdEntity> optionalAd = adsRepository.findById(id);
-        AdEntity ad = optionalAd.get();
-        ad = adsMapper.updateAdDtoToAdEntity(updateAdDto);
-        adsRepository.save(ad);
-        return adsMapper.adEntityToAdDto(ad);
+        if (optionalAd.isPresent()) {
+            adsMapper.updateAdDtoToAdEntity(updateAdDto, optionalAd.get());
+            adsRepository.save(optionalAd.get());
+            return adsMapper.adEntityToAdDto(optionalAd.get());
+        } else{
+            log.debug("Ad with id={}, cannot be deleted", id);
+            throw new AdNotDeletedException("Не удается удалить объявление");
+        }
     }
 
     public AdsDto findMyAds(Authentication authentication) {
@@ -121,6 +128,7 @@ public class AdService {
 
     /**
      * Возвращаем все объявления, что есть в базе
+     *
      * @return
      */
     public AdsDto findAllAds() {
