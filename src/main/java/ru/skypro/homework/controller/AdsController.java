@@ -25,54 +25,34 @@ import java.io.IOException;
 public class AdsController {
     private final AdService adService;
 
-    /**
-     * Возвращаем все объявления, что есть в базе
-     * @return
-     */
+
     @ResponseStatus(HttpStatus.OK)
     @GetMapping()
     public AdsDto getAllAds() {
-        log.info("Activated getAllAds method.");
         return adService.findAllAds();
     }
 
-    /**
-     * @param properties  - данные о товаре. DTO CreateOrUpdateAdDto - title, price, decsription
-     * @param file - загружаемая картинка товара
-     * @param userDetails - данные о том, куда класть объявления берутся из spring security
-     * @return - Возвращаем DTO AdDto
-     * @throws IOException
-     */
     @ResponseStatus(HttpStatus.OK)
     @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public AdDto addAd(@RequestPart(name = "properties") CreateOrUpdateAdDto properties,
                        @RequestPart(name = "image") MultipartFile file,
                        @AuthenticationPrincipal UserDetails userDetails) throws IOException {
-
-        log.info("Activated addAd method.");
         return adService.adAd(properties, file, userDetails);
     }
 
-
-    /**
-     *     Получение информации об объявлении
-     * @param id - идентификатор объявления
-     * @return
-     */
     @ResponseStatus(HttpStatus.OK)
     @GetMapping(path = "{id}")
     public ExtendedAdDto getInfoAboutAd(@PathVariable Integer id) {
         log.info("Activated getAds method.");
         return adService.findInfoAboutAd(id);
     }
-//
-//
-//    @ResponseStatus(HttpStatus.OK)
-//    @DeleteMapping
-//    public void removeAd(@RequestParam Integer id) {
-//        log.info("Activated removeAd method.");
-//        adService.deleteAdEntity(id);
-//    }
+
+
+    @ResponseStatus(HttpStatus.OK)
+    @DeleteMapping(path = "{id}")
+    public void removeAd(@PathVariable Integer id) {
+        adService.deleteAdEntity(id);
+    }
 //
 //    @ResponseStatus(HttpStatus.OK)
 //    @PatchMapping

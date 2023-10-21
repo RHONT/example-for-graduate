@@ -15,6 +15,7 @@ import ru.skypro.homework.dto.ExtendedAdDto;
 import ru.skypro.homework.entities.AdEntity;
 import ru.skypro.homework.entities.ImageEntity;
 import ru.skypro.homework.entities.UserEntity;
+import ru.skypro.homework.exceptions.AdNotDeletedException;
 import ru.skypro.homework.exceptions.NoAdException;
 import ru.skypro.homework.mappers.AdsMapper;
 import ru.skypro.homework.repository.AdsRepository;
@@ -36,7 +37,13 @@ public class AdService {
     private final ImageService imageService;
     private final ImageRepository imageRepository;
 
-    //    @Transactional
+    /**
+     * @param properties  - данные о товаре. DTO CreateOrUpdateAdDto - title, price, decsription
+     * @param file - загружаемая картинка товара
+     * @param userDetails - данные о том, куда класть объявления берутся из spring security
+     * @return - Возвращаем DTO AdDto
+     * @throws IOException
+     */
     public AdDto adAd(CreateOrUpdateAdDto createOrUpdateAdDto,
                       MultipartFile file,
                       UserDetails userDetails) throws IOException {
@@ -51,6 +58,11 @@ public class AdService {
         return adsMapper.adEntityToAdDto(ad);
     }
 
+    /**
+     * Получение информации об объявлении
+     * @param id - идентификатор объявления
+     * @return
+     */
     public ExtendedAdDto findInfoAboutAd(Integer id) {
         Optional<AdEntity> optionalAd = adsRepository.findById(id);
         if (optionalAd.isPresent()) {
@@ -61,8 +73,26 @@ public class AdService {
         }
     }
 
+    /**
+     * Удаляем выбранное объявление
+     * @param id
+     */
     public void deleteAdEntity(Integer id) {
-        adsRepository.deleteById(id);
+        Optional<AdEntity> ad=adsRepository.findById(id);
+        if (ad.isPresent()) {
+
+            adsRepository.deleteById(id);
+            Optional<AdEntity> checkAd=adsRepository.findById(id);
+
+            if (checkAd.isEmpty()) {
+                log.info("Ad with id={}, successfully deleted", id);
+            } else {
+                log.debug("Ad with id={}, cannot be deleted", id);
+                throw new AdNotDeletedException("Не удается удалить объявление");
+            }
+        } else throw new NoAdException("Ad with id =" + id + "not found");
+
+
     }
 
     public AdDto updateAd(Integer id, CreateOrUpdateAdDto updateAdDto) {
@@ -89,6 +119,10 @@ public class AdService {
 
     }
 
+    /**
+     * Возвращаем все объявления, что есть в базе
+     * @return
+     */
     public AdsDto findAllAds() {
         ArrayList<AdEntity> ads = adsRepository.findAll();
         List<AdDto> ads2 = adsMapper.ListAdToListDto(ads);
