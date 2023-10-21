@@ -93,8 +93,7 @@ public class CommentService {
                 }
             } else {
                 log.debug("Attempted unauthorized access idAd={}, idComment{}", adId, commentId);
-                //todo Почему-то все рушиться от этого эксепшена
-//                throw new UnauthorizedException("Attempted unauthorized access");
+                throw new UnauthorizedException("Attempted unauthorized access");
             }
         } else {
             log.debug("Ad with id={} not found", adId);
