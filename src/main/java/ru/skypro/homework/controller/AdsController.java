@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -14,6 +15,7 @@ import ru.skypro.homework.dto.AdsDto;
 import ru.skypro.homework.dto.ExtendedAdDto;
 import ru.skypro.homework.dto.CreateOrUpdateAdDto;
 import ru.skypro.homework.service.AdService;
+import ru.skypro.homework.service.ImageService;
 
 import java.io.IOException;
 
@@ -24,6 +26,7 @@ import java.io.IOException;
 @RequestMapping("ads/")
 public class AdsController {
     private final AdService adService;
+    private final ImageService imageService;
 
 
     @ResponseStatus(HttpStatus.OK)
@@ -69,13 +72,13 @@ public class AdsController {
         return adService.findMyAds(userDetails);
     }
 
-//    @PatchMapping(path = "/{id}/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-//    public ResponseEntity<byte[]> updateImage(@PathVariable("id") Integer id,
-//                                              @RequestParam("image") MultipartFile image) throws IOException {
-//        log.info("Activated updateImage method.");
-//        byte[] updatedImageBytes = image.getBytes();
-//        //Здесь будет код
-//        return ResponseEntity.ok().contentType(MediaType.APPLICATION_OCTET_STREAM).body(updatedImageBytes);
-//    }
+
+    @PatchMapping(path = "/{id}/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<byte[]> updateImageAd(@PathVariable(name = "id") Integer id,
+                                              @RequestParam("image") MultipartFile image) throws IOException {
+        log.info("Activated updateImage method.");
+        byte[] dataForResponse=imageService.updateImageEntity(id,image).getData();
+        return ResponseEntity.ok().contentType(MediaType.APPLICATION_OCTET_STREAM).body(dataForResponse);
+    }
 
 }

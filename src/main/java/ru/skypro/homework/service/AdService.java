@@ -2,8 +2,6 @@ package ru.skypro.homework.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -49,7 +47,7 @@ public class AdService {
                       UserDetails userDetails) throws IOException {
 
         Optional<UserEntity> user = usersRepository.findByUsername(userDetails.getUsername());
-        ImageEntity image = imageService.goImageToBD(file);
+        ImageEntity image = imageService.createImageEntityAndSaveBD(file);
         AdEntity ad = new AdEntity();
         adsMapper.updateAdDtoToAdEntity(createOrUpdateAdDto, ad);
         ad.setImageEntity(image);

@@ -2,7 +2,6 @@ package ru.skypro.homework.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,7 +32,7 @@ public class UserService {
 //        image.setData(file.getBytes());
 //        image.setFileSize(file.getSize());
 //        image.setMediaType(file.getContentType());
-        ImageEntity image = imageService.goImageToBD(file);
+        ImageEntity image = imageService.createImageEntityAndSaveBD(file);
         userEntity.setImageEntity(image);
         usersRepository.save(userEntity);
     }
