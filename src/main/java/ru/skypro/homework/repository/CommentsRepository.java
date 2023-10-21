@@ -9,7 +9,8 @@ import java.util.ArrayList;
 
 @Repository
 public interface CommentsRepository extends JpaRepository <CommentEntity, Integer> {
-    void deleteByCreatedAtAndCommentId (Integer createdAt, Integer commentId);
+
+    void deleteByCommentIdAndAdEntity_Pk (Integer commentId,Integer adId );
 
     ArrayList<CommentEntity> findCommentEntitiesByUserEntity(UserEntity user);
 }

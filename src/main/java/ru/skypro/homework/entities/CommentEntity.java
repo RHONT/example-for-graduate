@@ -1,9 +1,6 @@
 package ru.skypro.homework.entities;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 import org.hibernate.proxy.HibernateProxy;
 
 import javax.persistence.*;
@@ -13,15 +10,18 @@ import java.util.Objects;
 @Setter
 @Getter
 @ToString
+@Builder
 @NoArgsConstructor
 @Table(name = "comments")
+@AllArgsConstructor
 public class CommentEntity {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "comment_id")
     private Integer commentId;
 
     @Column(name = "created_at")
-    private Integer createdAt;
+    private Long createdAt;
 
     @Column(name = "text")
     private String text;
