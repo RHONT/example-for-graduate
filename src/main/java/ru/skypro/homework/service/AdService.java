@@ -98,6 +98,12 @@ public class AdService {
 
     }
 
+    /**
+     * Обновляем информацию об объявлении
+     * @param id - идентификатор объявления
+     * @param updateAdDto
+     * @return
+     */
     public AdDto updateAd(Integer id, CreateOrUpdateAdDto updateAdDto) {
         Optional<AdEntity> optionalAd = adsRepository.findById(id);
         if (optionalAd.isPresent()) {
@@ -110,34 +116,31 @@ public class AdService {
         }
     }
 
-    public AdsDto findMyAds(Authentication authentication) {
-        String username = authentication.getName();
-        UserEntity user = usersRepository.findByUsername(username).orElse(null);
-        ArrayList<AdEntity> myAds = adsRepository.findAdEntitiesByAuthor(user.getId().intValue());
-        ArrayList<AdDto> myTempAdsDto = new ArrayList<>();
-        myAds.forEach(adEntity -> {
-            AdDto adDto = adsMapper.adEntityToAdDto(adEntity);
-            myTempAdsDto.add(adDto);
-        });
+    /**
+     * Находим объявления авторизованного пользователя
+     * @param userDetails
+     * @return
+     */
+    @Transactional
+    public AdsDto findMyAds(UserDetails userDetails) {
+        UserEntity user = usersRepository.findByUsername(userDetails.getUsername()).get();
+        List<AdDto> listAdsDto = adsMapper.ListAdToListDto(user.getAdEntityList());
         AdsDto myAdsDto = new AdsDto();
-        myAdsDto.setResults(myTempAdsDto);
-        myAdsDto.setCount(myTempAdsDto.size());
+        myAdsDto.setResults((ArrayList<AdDto>) listAdsDto);
+        myAdsDto.setCount(listAdsDto.size());
         return myAdsDto;
-
     }
 
     /**
      * Возвращаем все объявления, что есть в базе
-     *
      * @return
      */
     public AdsDto findAllAds() {
-        ArrayList<AdEntity> ads = adsRepository.findAll();
-        List<AdDto> ads2 = adsMapper.ListAdToListDto(ads);
+        ArrayList<AdEntity> listAds = adsRepository.findAll();
+        List<AdDto> listAdsDto = adsMapper.ListAdToListDto(listAds);
         AdsDto adsDto = new AdsDto();
-        adsDto.setResults((ArrayList<AdDto>) ads2);
-        adsDto.setCount(ads2.size());
+        adsDto.setResults((ArrayList<AdDto>) listAdsDto);
+        adsDto.setCount(listAdsDto.size());
         return adsDto;
     }
-
 }

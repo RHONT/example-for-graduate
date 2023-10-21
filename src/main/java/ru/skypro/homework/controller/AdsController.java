@@ -61,14 +61,14 @@ public class AdsController {
         log.info("Activated updateAds method.");
         return adService.updateAd(id_ad, updateAdDto);
     }
-//
-//    @ResponseStatus(HttpStatus.OK)
-//    @GetMapping(path = "/me")
-//    public AdsDto getAdsMe(Authentication authentication) {
-//        log.info("Activated getAdsMe method.");
-//        return adService.findMyAds(authentication);
-//    }
-//
+
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping(path = "/me")
+    public AdsDto getAdsMe(@AuthenticationPrincipal UserDetails userDetails) {
+        log.info("Activated getAdsMe method.");
+        return adService.findMyAds(userDetails);
+    }
+
 //    @PatchMapping(path = "/{id}/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 //    public ResponseEntity<byte[]> updateImage(@PathVariable("id") Integer id,
 //                                              @RequestParam("image") MultipartFile image) throws IOException {
