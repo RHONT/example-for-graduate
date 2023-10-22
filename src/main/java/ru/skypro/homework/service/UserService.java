@@ -47,8 +47,7 @@ public class UserService {
 
     public UserDto getInfoAboutUser(UserDetails userDetails) {
         UserEntity user = usersRepository.findByUsername(userDetails.getUsername()).get();
-        UserDto userDto = userMapper.userEntityToUserDto(user);
-        return userDto;
+        return userMapper.userEntityToUserDto(user);
     }
 
     public SetPasswordDto setPassword(SetPasswordDto setPasswordDto, UserDetails userDetails) {

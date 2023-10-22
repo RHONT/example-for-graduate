@@ -81,23 +81,20 @@ public class CommentService {
         Optional<CommentEntity> commentEntity = Optional.of(new CommentEntity());
 
         if (adEntity.isPresent()) {
-            if (itISUserAd(userDetails, adEntity.get()) || userIsAdmin(userDetails)) {
-                    commentEntity = commentsRepository.findById(commentId);
-                    if (commentEntity.isPresent()) {
-                        commentEntity.get().setText(text);
-                        commentsRepository.save(commentEntity.get());
-                    } else {
-                        log.debug("Comment with id={} not found", commentId);
-                        throw new NoCommentException("Объявления с номером " + adId + "не существует");
-                    }
-                } else{
-                    log.debug("Attempted unauthorized access idAd={}, idComment{}", adId, commentId);
-                    throw new UnauthorizedException("Attempted unauthorized access");
-                }
+            checkAuthority(userDetails, adEntity.get());
+            commentEntity = commentsRepository.findById(commentId);
+            if (commentEntity.isPresent()) {
+                commentEntity.get().setText(text);
+                commentsRepository.save(commentEntity.get());
             } else {
-                log.debug("Ad with id={} not found", adId);
-                throw new NoAdException("Объявления с номером " + adId + "не существует");
+                log.debug("Comment with id={} not found", commentId);
+                throw new NoCommentException("Объявления с номером " + adId + "не существует");
             }
+
+        } else {
+            log.debug("Ad with id={} not found", adId);
+            throw new NoAdException("Объявления с номером " + adId + "не существует");
+        }
 
         return commentsMapper.commentEntityToCommentDto(commentEntity.get());
     }
@@ -121,5 +118,12 @@ public class CommentService {
 
     private boolean userIsAdmin(UserDetails userDetails) {
         return userDetails.getAuthorities().contains(new SimpleGrantedAuthority("ADMIN"));
+    }
+
+    private void checkAuthority(UserDetails userDetails, AdEntity ad) {
+        if (!itISUserAd(userDetails, ad) && !userIsAdmin(userDetails)) {
+            log.debug("Attempted unauthorized access idAd={}", ad.getPk());
+            throw new UnauthorizedException("Attempted unauthorized access");
+        }
     }
 }
