@@ -36,8 +36,7 @@ public class AdEntity {
     private String description;
 
     @ToString.Exclude
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JoinColumn(name = "comment_id")
+    @OneToMany(mappedBy = "adEntity",cascade = CascadeType.ALL)
     List<CommentEntity> commentEntityList;
 
     @ManyToOne

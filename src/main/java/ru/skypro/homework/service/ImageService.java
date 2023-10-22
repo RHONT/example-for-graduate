@@ -1,34 +1,59 @@
 package ru.skypro.homework.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import ru.skypro.homework.entities.ImageEntity;
+import ru.skypro.homework.exceptions.ImageNotFoundException;
+import ru.skypro.homework.mappers.ImageMapper;
 import ru.skypro.homework.repository.ImageRepository;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.util.Objects;
+import java.util.Optional;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class ImageService {
+    private final String source = "id-image/";
 
     private final ImageRepository imageRepository;
+    private final ImageMapper imageMapper;
 
-    public ImageEntity goImageToBD(MultipartFile file) throws IOException {
-        String extension = getExtension(Objects.requireNonNull(file.getOriginalFilename()));
-
+    /**
+     * Сохраняем картинку в базу. Двойное сохранение требуется для установления пути.
+     * Так как оно привзяано к id картинки
+     * Example: "id-image/5"
+     * @param file
+     * @return
+     * @throws IOException
+     */
+    public ImageEntity createImageEntityAndSaveBD(MultipartFile file) throws IOException {
         ImageEntity image = new ImageEntity();
-        image.setData(file.getBytes());
-        image.setMediaType(file.getContentType());
-        image.setFileSize(file.getSize());
-
+        imageMapper.updateImageEntityFromFile(file,image);
+        imageRepository.save(image);
+        image.setFilePath(source+image.getId());
+        imageRepository.save(image);
         return image;
     }
 
-    private String getExtension(String fileName) {
-        String substring = fileName.substring(fileName.lastIndexOf(".") + 1);
-        return substring;
+    //todo Возможны ли ситуации, когда мы можем создать объявление без картинки?
+    /**
+     * Обновляем уже существующую картинку
+     * @param id картинки
+     * @param file на обновление
+     * @return
+     */
+    public ImageEntity updateImageEntity(Integer id, MultipartFile file) throws IOException {
+        Optional<ImageEntity> image = imageRepository.findById(id);
+        if (image.isPresent()) {
+            imageMapper.updateImageEntityFromFile(file, image.get());
+            imageRepository.save(image.get());
+            return image.get();
+        } else {
+            log.debug("Image with id {}, not found", id);
+            throw new ImageNotFoundException("Image for ad with id" + id + " not found");
+        }
     }
 }
