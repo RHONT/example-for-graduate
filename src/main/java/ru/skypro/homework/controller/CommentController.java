@@ -8,6 +8,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import ru.skypro.homework.dto.CommentDto;
 import ru.skypro.homework.dto.CommentsDto;
+import ru.skypro.homework.dto.CreateOrUpdateComment;
 import ru.skypro.homework.service.CommentService;
 
 
@@ -28,9 +29,9 @@ public class CommentController {
 
     @ResponseStatus(HttpStatus.OK)
     @PostMapping(path = "{id}/comments")
-    public CommentDto addComment(@PathVariable Integer id, @RequestBody String text) {
+    public CommentDto addComment(@PathVariable Integer id, @RequestBody CreateOrUpdateComment CreateOrUpdateComment) {
 
-        return commentService.addNewComment(id,text);
+        return commentService.addNewComment(id,CreateOrUpdateComment);
     }
 
     @ResponseStatus(HttpStatus.OK)

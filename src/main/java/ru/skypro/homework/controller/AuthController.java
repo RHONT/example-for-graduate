@@ -34,13 +34,13 @@ public class AuthController {
     private final AuthenticationManager authManager;
     private final UsersRepository usersRepository;
     private final RoleRepository roleRepository;
-        private final PasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
     private final UserMapper userMapper;
 
     @PostMapping("/login")
     @Transactional
     public ResponseEntity<?> login(@RequestBody LoginDto loginDto) {
-        Authentication authentication= authManager.authenticate(
+        Authentication authentication = authManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         loginDto.getUsername(),
                         loginDto.getPassword()));
@@ -57,9 +57,9 @@ public class AuthController {
         if (usersRepository.existsByUsername(registerDto.getUsername())) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
-        Role role=roleRepository.findByName(registerDto.getRole()).get();
+        Role role = roleRepository.findByName(registerDto.getRole()).get();
 
-        UserEntity user=userMapper.registerDtoToUserEntity(registerDto);
+        UserEntity user = userMapper.registerDtoToUserEntity(registerDto);
 
         user.setPassword(passwordEncoder.encode(registerDto.getPassword()));
         user.setRoles(Collections.singletonList(role));

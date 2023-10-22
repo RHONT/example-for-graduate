@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.skypro.homework.dto.CommentDto;
 import ru.skypro.homework.dto.CommentsDto;
+import ru.skypro.homework.dto.CreateOrUpdateComment;
 import ru.skypro.homework.entities.AdEntity;
 import ru.skypro.homework.entities.CommentEntity;
 import ru.skypro.homework.exceptions.NoAdException;
@@ -37,12 +38,12 @@ public class CommentService {
      * @param text
      * @return
      */
-    public CommentDto addNewComment(Integer id, String text) {
+    public CommentDto addNewComment(Integer id, CreateOrUpdateComment CreateOrUpdateComment) {
         AdEntity ad = adsRepository.findById(id).get();
 
         CommentEntity comment = CommentEntity.builder().
                 createdAt(Instant.now().toEpochMilli()).
-                text(text).
+                text(CreateOrUpdateComment.getText()).
                 adEntity(ad).
                 userEntity(ad.getAuthor()).build();
         commentsRepository.save(comment);
