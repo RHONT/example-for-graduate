@@ -14,6 +14,7 @@ import ru.skypro.homework.dto.SetPasswordDto;
 import ru.skypro.homework.dto.UpdateUserDto;
 import ru.skypro.homework.dto.UserDto;
 import ru.skypro.homework.entities.ImageEntity;
+import ru.skypro.homework.entities.UserEntity;
 import ru.skypro.homework.repository.ImageRepository;
 import ru.skypro.homework.service.UserService;
 
@@ -30,8 +31,9 @@ public class UserController {
 
     @ResponseStatus(HttpStatus.OK)
     @PostMapping(path ="set_password")
-    public SetPasswordDto setPassword(@RequestBody SetPasswordDto setPasswordDto) {
-        return new SetPasswordDto();
+    public SetPasswordDto setPassword(@RequestBody SetPasswordDto setPasswordDto,@AuthenticationPrincipal UserDetails userDetails) {
+
+        return userService.setPassword(setPasswordDto,userDetails);
     }
 
     @ResponseStatus(HttpStatus.OK)

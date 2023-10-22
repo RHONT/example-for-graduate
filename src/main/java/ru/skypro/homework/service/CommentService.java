@@ -81,24 +81,23 @@ public class CommentService {
         Optional<CommentEntity> commentEntity = Optional.of(new CommentEntity());
 
         if (adEntity.isPresent()) {
-            if (Objects.equals(userDetails.getUsername(), adEntity.get().getAuthor().getUsername()) ||
-                    userDetails.getAuthorities().contains(new SimpleGrantedAuthority("ADMIN"))) {
-                commentEntity = commentsRepository.findById(commentId);
-                if (commentEntity.isPresent()) {
-                    commentEntity.get().setText(text);
-                    commentsRepository.save(commentEntity.get());
-                } else {
-                    log.debug("Comment with id={} not found", commentId);
-                    throw new NoCommentException("Объявления с номером " + adId + "не существует");
+            if (itISUserAd(userDetails, adEntity.get()) || userIsAdmin(userDetails)) {
+                    commentEntity = commentsRepository.findById(commentId);
+                    if (commentEntity.isPresent()) {
+                        commentEntity.get().setText(text);
+                        commentsRepository.save(commentEntity.get());
+                    } else {
+                        log.debug("Comment with id={} not found", commentId);
+                        throw new NoCommentException("Объявления с номером " + adId + "не существует");
+                    }
+                } else{
+                    log.debug("Attempted unauthorized access idAd={}, idComment{}", adId, commentId);
+                    throw new UnauthorizedException("Attempted unauthorized access");
                 }
             } else {
-                log.debug("Attempted unauthorized access idAd={}, idComment{}", adId, commentId);
-                throw new UnauthorizedException("Attempted unauthorized access");
+                log.debug("Ad with id={} not found", adId);
+                throw new NoAdException("Объявления с номером " + adId + "не существует");
             }
-        } else {
-            log.debug("Ad with id={} not found", adId);
-            throw new NoAdException("Объявления с номером " + adId + "не существует");
-        }
 
         return commentsMapper.commentEntityToCommentDto(commentEntity.get());
     }
@@ -114,5 +113,13 @@ public class CommentService {
         comments.setCount(commentsDto.size());
         comments.setResults(commentsDto);
         return comments;
+    }
+
+    private boolean itISUserAd(UserDetails userDetails, AdEntity ad) {
+        return Objects.equals(userDetails.getUsername(), ad.getAuthor().getUsername());
+    }
+
+    private boolean userIsAdmin(UserDetails userDetails) {
+        return userDetails.getAuthorities().contains(new SimpleGrantedAuthority("ADMIN"));
     }
 }

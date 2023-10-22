@@ -34,7 +34,7 @@ public class AuthController {
     private final AuthenticationManager authManager;
     private final UsersRepository usersRepository;
     private final RoleRepository roleRepository;
-    private final PasswordEncoder passwordEncoder;
+        private final PasswordEncoder passwordEncoder;
     private final UserMapper userMapper;
 
     @PostMapping("/login")
