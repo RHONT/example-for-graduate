@@ -90,12 +90,10 @@ public class CommentService {
                 log.debug("Comment with id={} not found", commentId);
                 throw new NoCommentException("Объявления с номером " + adId + "не существует");
             }
-
         } else {
             log.debug("Ad with id={} not found", adId);
             throw new NoAdException("Объявления с номером " + adId + "не существует");
         }
-
         return commentsMapper.commentEntityToCommentDto(commentEntity.get());
     }
 
