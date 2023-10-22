@@ -79,6 +79,11 @@ public class CommentService {
         return commentsMapper.commentEntityToCommentDto(commentEntity.get());
     }
 
+    /**
+     * Получить все комментарии в объявлении
+     * @param id - объявления
+     * @return
+     */
     @Transactional
     public CommentsDto getCommentsByIdAd(Integer id) {
         AdEntity ad = adsRepository.findById(id).get();
