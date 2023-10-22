@@ -67,32 +67,21 @@ public class CommentService {
     }
 
     //todo Зачем нам работать с adId, если мы можем сразу работать с commentId?
-
     /**
      * Обновления комментария
-     *
-     * @param adId      - объявления
      * @param commentId - комментария
      * @param text      - суть комментария
      * @return
      */
-    public CommentDto updateComment(Integer adId, Integer commentId, UserDetails userDetails, String text) {
-        Optional<AdEntity> adEntity = adsRepository.findById(adId);
-        Optional<CommentEntity> commentEntity = Optional.of(new CommentEntity());
-
-        if (adEntity.isPresent()) {
-            checkAuthority(userDetails, adEntity.get());
-            commentEntity = commentsRepository.findById(commentId);
-            if (commentEntity.isPresent()) {
-                commentEntity.get().setText(text);
-                commentsRepository.save(commentEntity.get());
-            } else {
-                log.debug("Comment with id={} not found", commentId);
-                throw new NoCommentException("Объявления с номером " + adId + "не существует");
-            }
+    public CommentDto updateComment(Integer commentId, UserDetails userDetails, String text) {
+        Optional<CommentEntity> commentEntity = commentsRepository.findById(commentId);
+        if (commentEntity.isPresent()) {
+            checkAuthority(userDetails, commentEntity.get());
+            commentEntity.get().setText(text);
+            commentsRepository.save(commentEntity.get());
         } else {
-            log.debug("Ad with id={} not found", adId);
-            throw new NoAdException("Объявления с номером " + adId + "не существует");
+            log.debug("Comment with id={} not found", commentId);
+            throw new NoAdException("Comment with id = " + commentId + "not found");
         }
         return commentsMapper.commentEntityToCommentDto(commentEntity.get());
     }
@@ -110,17 +99,17 @@ public class CommentService {
         return comments;
     }
 
-    private boolean itISUserAd(UserDetails userDetails, AdEntity ad) {
-        return Objects.equals(userDetails.getUsername(), ad.getAuthor().getUsername());
+    private boolean itISUserAd(UserDetails userDetails, CommentEntity comment) {
+        return Objects.equals(userDetails.getUsername(), comment.getUserEntity().getUsername());
     }
 
     private boolean userIsAdmin(UserDetails userDetails) {
         return userDetails.getAuthorities().contains(new SimpleGrantedAuthority("ADMIN"));
     }
 
-    private void checkAuthority(UserDetails userDetails, AdEntity ad) {
-        if (!itISUserAd(userDetails, ad) && !userIsAdmin(userDetails)) {
-            log.debug("Attempted unauthorized access idAd={}", ad.getPk());
+    private void checkAuthority(UserDetails userDetails, CommentEntity comment) {
+        if (!itISUserAd(userDetails, comment) && !userIsAdmin(userDetails)) {
+            log.debug("Attempted unauthorized access id comment={}", comment.getCommentId());
             throw new UnauthorizedException("Attempted unauthorized access");
         }
     }

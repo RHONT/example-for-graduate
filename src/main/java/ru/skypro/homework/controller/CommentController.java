@@ -46,6 +46,6 @@ public class CommentController {
                                                      @RequestBody String text,
                                     @AuthenticationPrincipal UserDetails userDetails) {
 
-        return commentService.updateComment(adId, commentId,userDetails, text);
+        return commentService.updateComment(commentId,userDetails, text);
     }
 }
