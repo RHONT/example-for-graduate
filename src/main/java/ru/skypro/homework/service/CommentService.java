@@ -11,14 +11,11 @@ import ru.skypro.homework.dto.CommentDto;
 import ru.skypro.homework.dto.CommentsDto;
 import ru.skypro.homework.entities.AdEntity;
 import ru.skypro.homework.entities.CommentEntity;
-import ru.skypro.homework.entities.UserEntity;
 import ru.skypro.homework.exceptions.NoAdException;
-import ru.skypro.homework.exceptions.NoCommentException;
 import ru.skypro.homework.exceptions.UnauthorizedException;
 import ru.skypro.homework.mappers.CommentsMapper;
 import ru.skypro.homework.repository.AdsRepository;
 import ru.skypro.homework.repository.CommentsRepository;
-import ru.skypro.homework.repository.UsersRepository;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -31,13 +28,11 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class CommentService {
     private final CommentsRepository commentsRepository;
-    private final UsersRepository usersRepository;
     private final CommentsMapper commentsMapper;
     private final AdsRepository adsRepository;
 
     /**
      * Добавляем комментарий к объявлению
-     *
      * @param id
      * @param text
      * @return
@@ -54,10 +49,8 @@ public class CommentService {
         return commentsMapper.commentEntityToCommentDto(comment);
     }
 
-
     /**
      * Удаление комментария
-     *
      * @param adId      - id объявления
      * @param commentId - id комментария
      */
@@ -99,16 +92,30 @@ public class CommentService {
         return comments;
     }
 
-    private boolean itISUserAd(UserDetails userDetails, CommentEntity comment) {
+    /**
+     * Проверка является ли комментарий личным
+     */
+    private boolean itISUserComment(UserDetails userDetails, CommentEntity comment) {
         return Objects.equals(userDetails.getUsername(), comment.getUserEntity().getUsername());
     }
 
+    /**
+     * Если авторизованный пользователь админ, то он имеет доступ на корректировку любого комментария
+     * @param userDetails
+     * @return
+     */
     private boolean userIsAdmin(UserDetails userDetails) {
         return userDetails.getAuthorities().contains(new SimpleGrantedAuthority("ADMIN"));
     }
 
+    /**
+     * Аккумулированный метод использующий userIsAdmin() и itISUserComment(), и если все плохо кидаем
+     * исключение и пишем в лог событие
+     * @param userDetails
+     * @param comment
+     */
     private void checkAuthority(UserDetails userDetails, CommentEntity comment) {
-        if (!itISUserAd(userDetails, comment) && !userIsAdmin(userDetails)) {
+        if (!itISUserComment(userDetails, comment) && !userIsAdmin(userDetails)) {
             log.debug("Attempted unauthorized access id comment={}", comment.getCommentId());
             throw new UnauthorizedException("Attempted unauthorized access");
         }
