@@ -15,6 +15,7 @@ import ru.skypro.homework.controller.AuthController;
 import ru.skypro.homework.controller.UserController;
 import ru.skypro.homework.dto.*;
 import ru.skypro.homework.entities.AdEntity;
+import ru.skypro.homework.entities.UserEntity;
 import ru.skypro.homework.repository.AdsRepository;
 import ru.skypro.homework.repository.ImageRepository;
 import ru.skypro.homework.repository.UsersRepository;
@@ -26,6 +27,7 @@ import ru.skypro.homework.utilclass.JavaFileToMultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -131,6 +133,16 @@ public class ControllerTest {
         AdsDto adsDto=adsController.getAllAds();
         int sum=adsRepository.findAll().size();
         assertEquals(sum,adsDto.getCount());
+    }
+
+    @Test
+    @Transactional
+    void getAdsMe() {
+        UserDetails activeUser=customUserDetailsService.loadUserByUsername("f@gmail.com");
+        AdsDto adsDto=adsController.getAdsMe(activeUser);
+        UserEntity user=usersRepository.findByUsername(activeUser.getUsername()).get();
+
+        assertEquals(user.getAdEntityList().size(),adsDto.getCount());
     }
 
 }
