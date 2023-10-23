@@ -81,6 +81,12 @@
       <artifactId>lombok-mapstruct-binding</artifactId>
       <version>${lombok-mapstruct-binding.version}</version>
     </dependency>
+      <dependency>
+          <groupId>org.junit.jupiter</groupId>
+          <artifactId>junit-jupiter-api</artifactId>
+          <version>5.9.3</version>
+          <scope>test</scope>
+      </dependency>
 
   </dependencies>
 
