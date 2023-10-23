@@ -9,16 +9,24 @@ import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.transaction.annotation.Transactional;
+import ru.skypro.homework.controller.AdsController;
 import ru.skypro.homework.controller.AuthController;
 import ru.skypro.homework.controller.UserController;
-import ru.skypro.homework.dto.LoginDto;
-import ru.skypro.homework.dto.RegisterDto;
-import ru.skypro.homework.dto.UpdateUserDto;
-import ru.skypro.homework.dto.UserDto;
+import ru.skypro.homework.dto.*;
+import ru.skypro.homework.entities.AdEntity;
+import ru.skypro.homework.repository.AdsRepository;
 import ru.skypro.homework.repository.ImageRepository;
 import ru.skypro.homework.repository.UsersRepository;
 import org.assertj.core.api.Assertions;
+import ru.skypro.homework.service.AdService;
 import ru.skypro.homework.service.CustomUserDetailsService;
+import ru.skypro.homework.service.ImageService;
+import ru.skypro.homework.utilclass.JavaFileToMultipartFile;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -45,9 +53,20 @@ public class ControllerTest {
     private AuthController authController;
 
     @Autowired
+    AdsController adsController;
+
+    @Autowired
+    AdsRepository adsRepository;
+
+    @Autowired
     CustomUserDetailsService customUserDetailsService;
 
-    private String userPath;
+    @Autowired
+    ImageService imageService;
+
+    @Autowired
+    AdService adService;
+
 
     RegisterDto registerDto= RegisterDto.builder().
             username("h@gmail.com").
@@ -59,7 +78,6 @@ public class ControllerTest {
 
     @BeforeEach
     void init() {
-        userPath = "http://localhost:" + port + "/users/";
         restTemplate.postForEntity("http://localhost:"+port+"/login",loginDto,ResponseEntity.class);
     }
 
@@ -92,6 +110,27 @@ public class ControllerTest {
         userController.updateUserDto(update,activeUser);
     }
 
+    // вопросы...
+    // картинка сохраняется, а объявление нет! Но тест проходит
+    @Test
+    @Transactional
+    void addAd() throws IOException {
+        UserDetails activeUser=customUserDetailsService.loadUserByUsername("f@gmail.com");
+        CreateOrUpdateAdDto newAd= CreateOrUpdateAdDto.builder().
+                title("Тест2").
+                price(100).
+                description("Тест описание2").build();
 
+        JavaFileToMultipartFile mf=new JavaFileToMultipartFile(new File("src/main/resources/image/test.jpg"));
+        AdDto adDto=adsController.addAd(newAd,mf,activeUser);
+        assertEquals("Тест2",adDto.getTitle());
+    }
+
+    @Test
+    void getAllAds(){
+        AdsDto adsDto=adsController.getAllAds();
+        int sum=adsRepository.findAll().size();
+        assertEquals(sum,adsDto.getCount());
+    }
 
 }
