@@ -47,12 +47,14 @@ public class AdService {
                       UserDetails userDetails) throws IOException {
 
         Optional<UserEntity> user = usersRepository.findByUsername(userDetails.getUsername());
-        ImageEntity image = imageService.createImageEntityAndSaveBD(file);
+        ImageEntity image = imageService.createImageEntity(file);
         AdEntity ad = new AdEntity();
         adsMapper.updateAdDtoToAdEntity(createOrUpdateAdDto, ad);
         ad.setImageEntity(image);
         ad.setAuthor(user.get());
         adsRepository.save(ad);
+        image.setFilePath(image.getFilePath() + ad.getImageEntity().getId().toString());
+        imageRepository.save(image);
 
         return adsMapper.adEntityToAdDto(ad);
     }
@@ -98,7 +100,8 @@ public class AdService {
 
     /**
      * Обновляем информацию об объявлении
-     * @param id - идентификатор объявления
+     *
+     * @param id          - идентификатор объявления
      * @param updateAdDto
      * @return
      */
@@ -108,7 +111,7 @@ public class AdService {
             adsMapper.updateAdDtoToAdEntity(updateAdDto, optionalAd.get());
             adsRepository.save(optionalAd.get());
             return adsMapper.adEntityToAdDto(optionalAd.get());
-        } else{
+        } else {
             log.debug("Ad with id={}, cannot be deleted", id);
             throw new AdNotDeletedException("Не удается удалить объявление");
         }
@@ -116,6 +119,7 @@ public class AdService {
 
     /**
      * Находим объявления авторизованного пользователя
+     *
      * @param userDetails
      * @return
      */
@@ -131,6 +135,7 @@ public class AdService {
 
     /**
      * Возвращаем все объявления, что есть в базе
+     *
      * @return
      */
     public AdsDto findAllAds() {

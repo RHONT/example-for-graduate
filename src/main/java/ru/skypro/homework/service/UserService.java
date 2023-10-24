@@ -32,7 +32,7 @@ public class UserService {
         log.info("method uploadAvatar is run");
 
         UserEntity userEntity = usersRepository.findByUsername(userDetails.getUsername()).get();
-        ImageEntity image = imageService.createImageEntityAndSaveBD(file);
+        ImageEntity image = imageService.createImageEntity(file);
         userEntity.setImageEntity(image);
         usersRepository.save(userEntity);
     }

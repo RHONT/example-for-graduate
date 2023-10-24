@@ -10,15 +10,16 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.transaction.annotation.Transactional;
+import ru.skypro.homework.config.WebSecurityConfig;
 import ru.skypro.homework.controller.AdsController;
 import ru.skypro.homework.controller.AuthController;
+import ru.skypro.homework.controller.CommentController;
 import ru.skypro.homework.controller.UserController;
 import ru.skypro.homework.dto.*;
 import ru.skypro.homework.entities.AdEntity;
+import ru.skypro.homework.entities.CommentEntity;
 import ru.skypro.homework.entities.UserEntity;
-import ru.skypro.homework.repository.AdsRepository;
-import ru.skypro.homework.repository.ImageRepository;
-import ru.skypro.homework.repository.UsersRepository;
+import ru.skypro.homework.repository.*;
 import org.assertj.core.api.Assertions;
 import ru.skypro.homework.service.AdService;
 import ru.skypro.homework.service.CustomUserDetailsService;
@@ -29,6 +30,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -40,13 +42,22 @@ public class ControllerTest {
     private int port;
 
     @Autowired
+    private WebSecurityConfig webSecurityConfig;
+
+    @Autowired
     private TestRestTemplate restTemplate;
 
     @Autowired
     private UsersRepository usersRepository;
 
     @Autowired
-    private  ImageRepository imageRepository;
+    private RoleRepository roleRepository;
+
+    @Autowired
+    private CommentsRepository commentsRepository;
+
+    @Autowired
+    private ImageRepository imageRepository;
 
     @Autowired
     private UserController userController;
@@ -61,6 +72,9 @@ public class ControllerTest {
     AdsRepository adsRepository;
 
     @Autowired
+    CommentController commentController;
+
+    @Autowired
     CustomUserDetailsService customUserDetailsService;
 
     @Autowired
@@ -69,80 +83,136 @@ public class ControllerTest {
     @Autowired
     AdService adService;
 
+    String startPath;
 
-    RegisterDto registerDto= RegisterDto.builder().
-            username("h@gmail.com").
-            firstName("Ivan").
-            password("123123123").
-            role("USER").build();
 
-   private static final LoginDto loginDto= LoginDto.builder().username("f@gmail.com").password("123123123").build();
+    RegisterDto registerDto;
+
+    private static final LoginDto loginDto = LoginDto.builder().username("f@gmail.com").password("123123123").build();
 
     @BeforeEach
     void init() {
-        restTemplate.postForEntity("http://localhost:"+port+"/login",loginDto,ResponseEntity.class);
+        restTemplate.postForEntity("http://localhost:" + port + "/login", loginDto, ResponseEntity.class);
+        startPath = "http://localhost:" + port + "/";
+
+        registerDto = RegisterDto.builder().
+                username("h@gmail.com").
+                firstName("Ivan").
+                password("123123123").
+                role("USER").build();
     }
 
     @Test
-    void login(){
+    void contextLoad() {
         Assertions.assertThat(authController).isNotNull();
+        Assertions.assertThat(adsController).isNotNull();
+        Assertions.assertThat(userController).isNotNull();
+    }
 
-        LoginDto loginDto= LoginDto.builder().username("f@gmail.com").password("123123123").build();
+    @Test
+    void login() {
+        LoginDto loginDto = LoginDto.builder().username("f@gmail.com").password("123123123").build();
         int statusCodeValue = authController.login(loginDto).getStatusCodeValue();
-        assertEquals(HttpStatus.OK.value(),statusCodeValue);
+        assertEquals(HttpStatus.OK.value(), statusCodeValue);
     }
 
-
-    @Test
-    void infoAboutAuthUser(){
-        UserDetails activeUser=customUserDetailsService.loadUserByUsername("f@gmail.com");
-        UserDto userDto=userController.infoAboutAuthUser(activeUser);
-        assertEquals(userDto.getFirstName(),"Генадий");
-    }
-
-    @Test
-    void updateUserDto(){
-        UserDetails activeUser=customUserDetailsService.loadUserByUsername("f@gmail.com");
-        UpdateUserDto update= UpdateUserDto.builder().firstName("Новое Имя").lastName("Новая фамилия").build();
-        UpdateUserDto updatedUser=userController.updateUserDto(update,activeUser);
-
-        assertEquals(updatedUser.getFirstName(),"Новое Имя");
-
-        update= UpdateUserDto.builder().firstName("Генадий").lastName("Владыкор").build();
-        userController.updateUserDto(update,activeUser);
-    }
-
-    // вопросы...
-    // картинка сохраняется, а объявление нет! Но тест проходит
+    //todo Не могу удалить user
     @Test
     @Transactional
+    void register() {
+        String userName = "TestPerson@gmail.com";
+        registerDto.setUsername(userName);
+        ResponseEntity<?> response =
+                restTemplate.
+                        postForEntity(startPath + "register", registerDto, ResponseEntity.class);
+        assertEquals(HttpStatus.CREATED.value(), response.getStatusCodeValue());
+    }
+
+
+    @Test
+    void infoAboutAuthUser() {
+        UserDetails activeUser = customUserDetailsService.loadUserByUsername("f@gmail.com");
+        UserDto userDto = userController.infoAboutAuthUser(activeUser);
+        assertEquals(userDto.getFirstName(), "Генадий");
+    }
+
+    @Test
+    void updateUserDto() {
+        UserDetails activeUser = customUserDetailsService.loadUserByUsername("f@gmail.com");
+        UpdateUserDto update = UpdateUserDto.builder().firstName("Новое Имя").lastName("Новая фамилия").build();
+        UpdateUserDto updatedUser = userController.updateUserDto(update, activeUser);
+
+        assertEquals(updatedUser.getFirstName(), "Новое Имя");
+
+        update = UpdateUserDto.builder().firstName("Генадий").lastName("Владыкор").build();
+        userController.updateUserDto(update, activeUser);
+    }
+
+    @Test
     void addAd() throws IOException {
-        UserDetails activeUser=customUserDetailsService.loadUserByUsername("f@gmail.com");
-        CreateOrUpdateAdDto newAd= CreateOrUpdateAdDto.builder().
+        UserDetails activeUser = customUserDetailsService.loadUserByUsername("f@gmail.com");
+        CreateOrUpdateAdDto newAd = CreateOrUpdateAdDto.builder().
                 title("Тест2").
                 price(100).
                 description("Тест описание2").build();
 
-        JavaFileToMultipartFile mf=new JavaFileToMultipartFile(new File("src/main/resources/image/test.jpg"));
-        AdDto adDto=adsController.addAd(newAd,mf,activeUser);
-        assertEquals("Тест2",adDto.getTitle());
+        JavaFileToMultipartFile mf = new JavaFileToMultipartFile(new File("src/main/resources/image/test.jpg"));
+        AdDto adDto = adsController.addAd(newAd, mf, activeUser);
+        assertEquals("Тест2", adDto.getTitle());
     }
 
     @Test
-    void getAllAds(){
-        AdsDto adsDto=adsController.getAllAds();
-        int sum=adsRepository.findAll().size();
-        assertEquals(sum,adsDto.getCount());
+    void getAllAds() {
+        AdsDto adsDto = adsController.getAllAds();
+        int sum = adsRepository.findAll().size();
+        assertEquals(sum, adsDto.getCount());
     }
 
     @Test
     @Transactional
     void getAdsMe() {
-        UserDetails activeUser=customUserDetailsService.loadUserByUsername("f@gmail.com");
-        AdsDto adsDto=adsController.getAdsMe(activeUser);
-        UserEntity user=usersRepository.findByUsername(activeUser.getUsername()).get();
-
-        assertEquals(user.getAdEntityList().size(),adsDto.getCount());
+        UserDetails activeUser = customUserDetailsService.loadUserByUsername("f@gmail.com");
+        AdsDto adsDto = adsController.getAdsMe(activeUser);
+        UserEntity user = usersRepository.findByUsername(activeUser.getUsername()).get();
+        assertEquals(user.getAdEntityList().size(), adsDto.getCount());
     }
+
+    //todo доделать
+    @Test
+    void updateImageAdd() {
+    }
+
+    @Test
+    void addComment() {
+        UserDetails activeUser = customUserDetailsService.loadUserByUsername("f@gmail.com");
+        CreateOrUpdateComment comment = new CreateOrUpdateComment();
+        comment.setText("Тест комментарий");
+        CommentDto commentDto = commentController.addComment(1, comment);
+        assertEquals(commentDto.getText(),"Тест комментарий");
+    }
+
+
+    @Test
+    @Transactional
+    void getComments() {
+        UserDetails activeUser = customUserDetailsService.loadUserByUsername("f@gmail.com");
+        AdEntity ad=adsRepository.findById(1).get();
+
+        CommentsDto comments = commentController.getComments(ad.getPk());
+        assertEquals(ad.getCommentEntityList().size(),comments.getCount());
+    }
+
+
+    @Test
+    void deleteComment() {
+
+    }
+
+
+    @Test
+    void updateComment() {
+
+    }
+
 
 }

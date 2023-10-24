@@ -6,6 +6,7 @@ import ru.skypro.homework.entities.CommentEntity;
 import ru.skypro.homework.entities.UserEntity;
 
 import java.util.ArrayList;
+import java.util.Optional;
 
 @Repository
 public interface CommentsRepository extends JpaRepository <CommentEntity, Integer> {
@@ -13,4 +14,6 @@ public interface CommentsRepository extends JpaRepository <CommentEntity, Intege
     void deleteByCommentIdAndAdEntity_Pk (Integer commentId,Integer adId );
 
     ArrayList<CommentEntity> findCommentEntitiesByUserEntity(UserEntity user);
+
+    Optional<CommentEntity> findByText(String text);
 }
