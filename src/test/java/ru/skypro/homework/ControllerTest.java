@@ -9,6 +9,7 @@ import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 import ru.skypro.homework.config.WebSecurityConfig;
 import ru.skypro.homework.controller.AdsController;
@@ -33,6 +34,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -197,20 +199,35 @@ public class ControllerTest {
     void getComments() {
         UserDetails activeUser = customUserDetailsService.loadUserByUsername("f@gmail.com");
         AdEntity ad=adsRepository.findById(1).get();
-
         CommentsDto comments = commentController.getComments(ad.getPk());
         assertEquals(ad.getCommentEntityList().size(),comments.getCount());
     }
 
 
+    //todo авторизация
     @Test
+    @Transactional
     void deleteComment() {
-
+        UserDetails activeUser = customUserDetailsService.loadUserByUsername("f@gmail.com");
+        AdEntity ad=adsRepository.findById(1).get();
+        int count=ad.getCommentEntityList().size();
+        commentController.deleteComment(1,1);
+        Optional<CommentEntity> comment = commentsRepository.findById(1);
+        assertTrue(comment.isEmpty());
     }
 
 
+    //todo почему то не работает restTamplate
     @Test
     void updateComment() {
+        UserDetails activeUser = customUserDetailsService.loadUserByUsername("f@gmail.com");
+        CreateOrUpdateComment comment = new CreateOrUpdateComment();
+        comment.setText("Тест другой");
+
+//        CommentDto commentDto = restTemplate.patchForObject(startPath + "/ads/1/comments/1", "Тест другой", CommentDto.class);
+        CommentDto commentDto =commentController.updateComment(1,1,"Тест другой",activeUser);
+        assertEquals("Тест другой",commentDto.getText());
+
 
     }
 
