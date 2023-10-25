@@ -2,6 +2,8 @@ package ru.skypro.homework.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -11,10 +13,12 @@ import ru.skypro.homework.dto.AdsDto;
 import ru.skypro.homework.dto.CreateOrUpdateAdDto;
 import ru.skypro.homework.dto.ExtendedAdDto;
 import ru.skypro.homework.entities.AdEntity;
+import ru.skypro.homework.entities.CommentEntity;
 import ru.skypro.homework.entities.ImageEntity;
 import ru.skypro.homework.entities.UserEntity;
 import ru.skypro.homework.exceptions.AdNotDeletedException;
 import ru.skypro.homework.exceptions.NoAdException;
+import ru.skypro.homework.exceptions.UnauthorizedException;
 import ru.skypro.homework.mappers.AdsMapper;
 import ru.skypro.homework.repository.AdsRepository;
 import ru.skypro.homework.repository.ImageRepository;
@@ -23,6 +27,7 @@ import ru.skypro.homework.repository.UsersRepository;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Slf4j
@@ -80,10 +85,10 @@ public class AdService {
      *
      * @param id
      */
-    public void deleteAdEntity(Integer id) {
-        Optional<AdEntity> ad = adsRepository.findById(id);
-        if (ad.isPresent()) {
-
+    public void deleteAdEntity(Integer id,UserDetails userDetails) {
+        Optional<AdEntity> optionalAd = adsRepository.findById(id);
+        if (optionalAd.isPresent()) {
+            checkAuthority(userDetails,optionalAd.get());
             adsRepository.deleteById(id);
             Optional<AdEntity> checkAd = adsRepository.findById(id);
 
@@ -105,9 +110,10 @@ public class AdService {
      * @param updateAdDto
      * @return
      */
-    public AdDto updateAd(Integer id, CreateOrUpdateAdDto updateAdDto) {
+    public AdDto updateAd(Integer id, CreateOrUpdateAdDto updateAdDto,UserDetails userDetails) {
         Optional<AdEntity> optionalAd = adsRepository.findById(id);
         if (optionalAd.isPresent()) {
+            checkAuthority(userDetails,optionalAd.get());
             adsMapper.updateAdDtoToAdEntity(updateAdDto, optionalAd.get());
             adsRepository.save(optionalAd.get());
             return adsMapper.adEntityToAdDto(optionalAd.get());
@@ -145,5 +151,35 @@ public class AdService {
         adsDto.setResults((ArrayList<AdDto>) listAdsDto);
         adsDto.setCount(listAdsDto.size());
         return adsDto;
+    }
+
+
+    /**
+     * Проверка является ли комментарий личным
+     */
+    private boolean itISUserAd(UserDetails userDetails, AdEntity ad) {
+        return Objects.equals(userDetails.getUsername(), ad.getAuthor().getUsername();
+    }
+
+    /**
+     * Если авторизованный пользователь админ, то он имеет доступ на корректировку любого комментария
+     * @param userDetails
+     * @return
+     */
+    private boolean userIsAdmin(UserDetails userDetails) {
+        return userDetails.getAuthorities().contains(new SimpleGrantedAuthority("ADMIN"));
+    }
+
+    /**
+     * Аккумулированный метод использующий userIsAdmin() и itISUserComment(), и если все плохо кидаем
+     * исключение и пишем в лог событие
+     * @param userDetails
+     * @param ad
+     */
+    private void checkAuthority(UserDetails userDetails, AdEntity ad) {
+        if (!itISUserAd(userDetails, ad) && !userIsAdmin(userDetails)) {
+            log.debug("Attempted unauthorized access id ad={}", ad.getPk());
+            throw new UnauthorizedException("Attempted unauthorized access");
+        }
     }
 }

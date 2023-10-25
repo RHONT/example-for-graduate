@@ -53,16 +53,17 @@ public class AdsController {
 
     @ResponseStatus(HttpStatus.OK)
     @DeleteMapping(path = "{id}")
-    public void removeAd(@PathVariable Integer id) {
-        adService.deleteAdEntity(id);
+    public void removeAd(@PathVariable Integer id, @AuthenticationPrincipal UserDetails userDetails) {
+        adService.deleteAdEntity(id, userDetails);
     }
 
     @ResponseStatus(HttpStatus.OK)
     @PatchMapping(path = "/{id_ad}")
     public AdDto updateAds(@PathVariable Integer id_ad,
-                           @RequestBody CreateOrUpdateAdDto updateAdDto) {
+                           @RequestBody CreateOrUpdateAdDto updateAdDto,
+                           @AuthenticationPrincipal UserDetails userDetails) {
         log.info("Activated updateAds method.");
-        return adService.updateAd(id_ad, updateAdDto);
+        return adService.updateAd(id_ad, updateAdDto,userDetails);
     }
 
     @ResponseStatus(HttpStatus.OK)
