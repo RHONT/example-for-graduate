@@ -40,7 +40,7 @@ public class CommentService {
      * @return
      */
 
-    @Secured("USER")
+
     public CommentDto addNewComment(Integer id, CreateOrUpdateComment CreateOrUpdateComment) {
         AdEntity ad = adsRepository.findById(id).get();
 
@@ -58,7 +58,7 @@ public class CommentService {
      * @param adId      - id объявления
      * @param commentId - id комментария
      */
-    @Secured({"USER","ADMIN"})
+
     @Transactional
     public void deleteComment(Integer adId, Integer commentId) {
         commentsRepository.deleteByCommentIdAndAdEntity_Pk(commentId, adId);
@@ -71,7 +71,7 @@ public class CommentService {
      * @param commentUpdate      - суть комментария
      * @return
      */
-    @Secured({"USER","ADMIN"})
+
     public CommentDto updateComment(Integer commentId, UserDetails userDetails, CreateOrUpdateComment commentUpdate) {
         Optional<CommentEntity> commentEntity = commentsRepository.findById(commentId);
         if (commentEntity.isPresent()) {
@@ -91,7 +91,6 @@ public class CommentService {
      * @return
      */
     @Transactional
-    @Secured({"USER","ADMIN"})
     public CommentsDto getCommentsByIdAd(Integer id) {
         AdEntity ad = adsRepository.findById(id).get();
         CommentsDto comments = new CommentsDto();

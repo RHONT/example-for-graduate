@@ -49,7 +49,6 @@ public class AdService {
      * @return - Возвращаем DTO AdDto
      * @throws IOException
      */
-    @Secured("USER")
     public AdDto adAd(CreateOrUpdateAdDto createOrUpdateAdDto,
                       MultipartFile file,
                       UserDetails userDetails) throws IOException {
@@ -73,7 +72,6 @@ public class AdService {
      * @param id - идентификатор объявления
      * @return
      */
-    @Secured({"USER","ADMIN"})
     public ExtendedAdDto findInfoAboutAd(Integer id) {
         Optional<AdEntity> optionalAd = adsRepository.findById(id);
         if (optionalAd.isPresent()) {
@@ -89,7 +87,6 @@ public class AdService {
      *
      * @param id
      */
-    @Secured({"USER","ADMIN"})
     public void deleteAdEntity(Integer id,UserDetails userDetails) {
         Optional<AdEntity> optionalAd = adsRepository.findById(id);
         if (optionalAd.isPresent()) {
@@ -115,7 +112,6 @@ public class AdService {
      * @param updateAdDto
      * @return
      */
-    @Secured({"USER","ADMIN"})
     public AdDto updateAd(Integer id, CreateOrUpdateAdDto updateAdDto,UserDetails userDetails) {
         Optional<AdEntity> optionalAd = adsRepository.findById(id);
         if (optionalAd.isPresent()) {
@@ -136,7 +132,7 @@ public class AdService {
      * @return
      */
     @Transactional
-    @Secured("USER")
+
     public AdsDto findMyAds(UserDetails userDetails) {
         UserEntity user = usersRepository.findByUsername(userDetails.getUsername()).get();
         List<AdDto> listAdsDto = adsMapper.ListAdToListDto(user.getAdEntityList());
