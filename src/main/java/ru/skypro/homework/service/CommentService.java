@@ -3,6 +3,7 @@ package ru.skypro.homework.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -38,6 +39,8 @@ public class CommentService {
      * @param text
      * @return
      */
+
+    @Secured("USER")
     public CommentDto addNewComment(Integer id, CreateOrUpdateComment CreateOrUpdateComment) {
         AdEntity ad = adsRepository.findById(id).get();
 
@@ -55,6 +58,7 @@ public class CommentService {
      * @param adId      - id объявления
      * @param commentId - id комментария
      */
+    @Secured({"USER","ADMIN"})
     @Transactional
     public void deleteComment(Integer adId, Integer commentId) {
         commentsRepository.deleteByCommentIdAndAdEntity_Pk(commentId, adId);
@@ -67,6 +71,7 @@ public class CommentService {
      * @param text      - суть комментария
      * @return
      */
+    @Secured({"USER","ADMIN"})
     public CommentDto updateComment(Integer commentId, UserDetails userDetails, String text) {
         Optional<CommentEntity> commentEntity = commentsRepository.findById(commentId);
         if (commentEntity.isPresent()) {
@@ -86,6 +91,7 @@ public class CommentService {
      * @return
      */
     @Transactional
+    @Secured({"USER","ADMIN"})
     public CommentsDto getCommentsByIdAd(Integer id) {
         AdEntity ad = adsRepository.findById(id).get();
         CommentsDto comments = new CommentsDto();

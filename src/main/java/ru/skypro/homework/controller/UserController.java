@@ -6,6 +6,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
@@ -14,7 +15,6 @@ import ru.skypro.homework.dto.SetPasswordDto;
 import ru.skypro.homework.dto.UpdateUserDto;
 import ru.skypro.homework.dto.UserDto;
 import ru.skypro.homework.entities.ImageEntity;
-import ru.skypro.homework.entities.UserEntity;
 import ru.skypro.homework.repository.ImageRepository;
 import ru.skypro.homework.service.UserService;
 
@@ -29,6 +29,7 @@ public class UserController {
     private final UserService userService;
     private final ImageRepository imageRepository;
 
+    @Secured({"USER","ADMIN"})
     @ResponseStatus(HttpStatus.OK)
     @PostMapping(path ="set_password")
     public SetPasswordDto setPassword(@RequestBody SetPasswordDto setPasswordDto,@AuthenticationPrincipal UserDetails userDetails) {
@@ -36,18 +37,20 @@ public class UserController {
         return userService.setPassword(setPasswordDto,userDetails);
     }
 
+    @Secured({"USER","ADMIN"})
     @ResponseStatus(HttpStatus.OK)
     @GetMapping(path = "me")
     public UserDto infoAboutAuthUser(@AuthenticationPrincipal UserDetails userDetails) {
         return userService.getInfoAboutUser(userDetails);
     }
-
+    @Secured({"USER","ADMIN"})
     @ResponseStatus(HttpStatus.OK)
     @PatchMapping(path = "me")
     public UpdateUserDto updateUserDto(@RequestBody UpdateUserDto updateUserDto, @AuthenticationPrincipal UserDetails userDetails){
         return userService.updateInfoUser(updateUserDto,userDetails);
     }
 
+    @Secured({"USER","ADMIN"})
     @ResponseStatus(HttpStatus.OK)
     @PatchMapping(path = "me/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public void updateUserDto(@RequestParam MultipartFile avatarUser,
