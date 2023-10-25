@@ -87,14 +87,18 @@ public class ControllerTest {
 
     String startPath;
 
+    UserDetails activeUser;
+    private final String userNameUser = "user@gmail.com";
+    UserDetails activeAdmin;
+    private final String adminNameUser = "admin@gmail.com";
+    UserDetails activeEnemy;
+    private final String enemyNameUser = "enemy@gmail.com";
 
     RegisterDto registerDto;
 
-    private static final LoginDto loginDto = LoginDto.builder().username("f@gmail.com").password("123123123").build();
-
     @BeforeEach
     void init() {
-        restTemplate.postForEntity("http://localhost:" + port + "/login", loginDto, ResponseEntity.class);
+//        restTemplate.postForEntity("http://localhost:" + port + "/login", loginDto, ResponseEntity.class);
         startPath = "http://localhost:" + port + "/";
 
         registerDto = RegisterDto.builder().
@@ -113,12 +117,12 @@ public class ControllerTest {
 
     @Test
     void login() {
-        LoginDto loginDto = LoginDto.builder().username("f@gmail.com").password("123123123").build();
+        LoginDto loginDto = LoginDto.builder().username(userNameUser).password("123123123").build();
         int statusCodeValue = authController.login(loginDto).getStatusCodeValue();
         assertEquals(HttpStatus.OK.value(), statusCodeValue);
     }
 
-    //todo Не могу удалить user
+    //todo Не могу удалить user. Но тогда почему нет отката после окончания теста?
     @Test
     @Transactional
     void register() {
@@ -133,34 +137,42 @@ public class ControllerTest {
 
     @Test
     void infoAboutAuthUser() {
-        UserDetails activeUser = customUserDetailsService.loadUserByUsername("f@gmail.com");
+        activeUser = customUserDetailsService.loadUserByUsername(userNameUser);
         UserDto userDto = userController.infoAboutAuthUser(activeUser);
-        assertEquals(userDto.getFirstName(), "Генадий");
+        assertEquals(userDto.getFirstName(), "Евгений");
     }
 
     @Test
     void updateUserDto() {
-        UserDetails activeUser = customUserDetailsService.loadUserByUsername("f@gmail.com");
-        UpdateUserDto update = UpdateUserDto.builder().firstName("Новое Имя").lastName("Новая фамилия").build();
+        String testName="Думгай";
+        String testLastName="Петрович";
+
+        activeUser = customUserDetailsService.loadUserByUsername(userNameUser);
+        UpdateUserDto update = UpdateUserDto.builder().firstName(testName).lastName(testLastName).build();
         UpdateUserDto updatedUser = userController.updateUserDto(update, activeUser);
 
-        assertEquals(updatedUser.getFirstName(), "Новое Имя");
+        assertEquals(updatedUser.getFirstName(), testName);
 
-        update = UpdateUserDto.builder().firstName("Генадий").lastName("Владыкор").build();
+        update = UpdateUserDto.builder().firstName("Евгений").lastName("Белых").build();
         userController.updateUserDto(update, activeUser);
     }
 
     @Test
     void addAd() throws IOException {
-        UserDetails activeUser = customUserDetailsService.loadUserByUsername("f@gmail.com");
+        String testTitle = "Test_Title";
+        int testPrice = 128;
+        String testDesc = "Test_Description";
+
+
+        activeUser = customUserDetailsService.loadUserByUsername(userNameUser);
         CreateOrUpdateAdDto newAd = CreateOrUpdateAdDto.builder().
-                title("Тест2").
-                price(100).
-                description("Тест описание2").build();
+                title(testTitle).
+                price(testPrice).
+                description(testDesc).build();
 
         JavaFileToMultipartFile mf = new JavaFileToMultipartFile(new File("src/main/resources/image/test.jpg"));
         AdDto adDto = adsController.addAd(newAd, mf, activeUser);
-        assertEquals("Тест2", adDto.getTitle());
+        assertEquals(testTitle, adDto.getTitle());
     }
 
     @Test
@@ -173,7 +185,7 @@ public class ControllerTest {
     @Test
     @Transactional
     void getAdsMe() {
-        UserDetails activeUser = customUserDetailsService.loadUserByUsername("f@gmail.com");
+        activeUser = customUserDetailsService.loadUserByUsername(userNameUser);
         AdsDto adsDto = adsController.getAdsMe(activeUser);
         UserEntity user = usersRepository.findByUsername(activeUser.getUsername()).get();
         assertEquals(user.getAdEntityList().size(), adsDto.getCount());
@@ -186,21 +198,22 @@ public class ControllerTest {
 
     @Test
     void addComment() {
-        UserDetails activeUser = customUserDetailsService.loadUserByUsername("f@gmail.com");
+        String testComment="testComment";
+        activeUser = customUserDetailsService.loadUserByUsername(userNameUser);
         CreateOrUpdateComment comment = new CreateOrUpdateComment();
-        comment.setText("Тест комментарий");
+        comment.setText(testComment);
         CommentDto commentDto = commentController.addComment(1, comment);
-        assertEquals(commentDto.getText(),"Тест комментарий");
+        assertEquals(commentDto.getText(), testComment);
     }
 
 
     @Test
     @Transactional
     void getComments() {
-        UserDetails activeUser = customUserDetailsService.loadUserByUsername("f@gmail.com");
-        AdEntity ad=adsRepository.findById(1).get();
+        activeUser = customUserDetailsService.loadUserByUsername(userNameUser);
+        AdEntity ad = adsRepository.findById(1).get();
         CommentsDto comments = commentController.getComments(ad.getPk());
-        assertEquals(ad.getCommentEntityList().size(),comments.getCount());
+        assertEquals(ad.getCommentEntityList().size(), comments.getCount());
     }
 
 
@@ -208,10 +221,8 @@ public class ControllerTest {
     @Test
     @Transactional
     void deleteComment() {
-        UserDetails activeUser = customUserDetailsService.loadUserByUsername("f@gmail.com");
-        AdEntity ad=adsRepository.findById(1).get();
-        int count=ad.getCommentEntityList().size();
-        commentController.deleteComment(1,1);
+        activeUser = customUserDetailsService.loadUserByUsername(userNameUser);
+        commentController.deleteComment(1, 1);
         Optional<CommentEntity> comment = commentsRepository.findById(1);
         assertTrue(comment.isEmpty());
     }
@@ -220,13 +231,18 @@ public class ControllerTest {
     //todo почему то не работает restTamplate
     @Test
     void updateComment() {
-        UserDetails activeUser = customUserDetailsService.loadUserByUsername("f@gmail.com");
+        String testComment="another_Comment";
+
+        activeUser = customUserDetailsService.loadUserByUsername(userNameUser);
+
+        activeAdmin = customUserDetailsService.loadUserByUsername(adminNameUser);
+
         CreateOrUpdateComment comment = new CreateOrUpdateComment();
-        comment.setText("Тест другой");
+        comment.setText(testComment);
 
 //        CommentDto commentDto = restTemplate.patchForObject(startPath + "/ads/1/comments/1", "Тест другой", CommentDto.class);
-        CommentDto commentDto =commentController.updateComment(1,1,"Тест другой",activeUser);
-        assertEquals("Тест другой",commentDto.getText());
+        CommentDto commentDto = commentController.updateComment(1, 1, comment, activeUser);
+        assertEquals(testComment, commentDto.getText());
 
 
     }
