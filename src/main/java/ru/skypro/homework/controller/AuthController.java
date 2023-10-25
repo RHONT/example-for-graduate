@@ -55,7 +55,7 @@ public class AuthController {
         if (usersRepository.existsByUsername(registerDto.getUsername())) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
-        Optional<Role> role = roleRepository.findByName("ROLE_"+registerDto.getRole());
+        Optional<Role> role = roleRepository.findByName(registerDto.getRole());
 
         UserEntity user = userMapper.registerDtoToUserEntity(registerDto);
 
