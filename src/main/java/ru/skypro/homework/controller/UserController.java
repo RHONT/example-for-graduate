@@ -43,6 +43,7 @@ public class UserController {
     public UserDto infoAboutAuthUser(@AuthenticationPrincipal UserDetails userDetails) {
         return userService.getInfoAboutUser(userDetails);
     }
+
     @Secured({"USER","ADMIN"})
     @ResponseStatus(HttpStatus.OK)
     @PatchMapping(path = "me")

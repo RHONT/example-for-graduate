@@ -20,6 +20,7 @@ import ru.skypro.homework.dto.*;
 import ru.skypro.homework.entities.AdEntity;
 import ru.skypro.homework.entities.CommentEntity;
 import ru.skypro.homework.entities.UserEntity;
+import ru.skypro.homework.exceptions.UnauthorizedException;
 import ru.skypro.homework.repository.*;
 import org.assertj.core.api.Assertions;
 import ru.skypro.homework.service.AdService;
@@ -228,23 +229,31 @@ public class ControllerTest {
     }
 
 
-    //todo почему то не работает restTamplate
+    //todo почему-то не работает restTemplate
     @Test
     void updateComment() {
-        String testComment="another_Comment";
+        CreateOrUpdateComment comment = new CreateOrUpdateComment();
+        String userComment="User_Comment";
+        String adminComment="Admin_Comment";
+        String enemyComment="Enemy_Comment";
 
         activeUser = customUserDetailsService.loadUserByUsername(userNameUser);
-
         activeAdmin = customUserDetailsService.loadUserByUsername(adminNameUser);
+        activeEnemy = customUserDetailsService.loadUserByUsername(enemyNameUser);
 
-        CreateOrUpdateComment comment = new CreateOrUpdateComment();
-        comment.setText(testComment);
+        comment.setText(userComment);
+        CommentDto commentUserDto = commentController.updateComment(1, 1, comment, activeUser);
+        assertEquals(userComment, commentUserDto.getText());
 
+        comment.setText(adminComment);
+        CommentDto commentAdminDto = commentController.updateComment(1, 1, comment, activeAdmin);
+        assertEquals(adminComment, commentAdminDto.getText());
+
+        comment.setText(enemyComment);
+        assertThrows(UnauthorizedException.class,()->{
+            commentController.updateComment(1, 1, comment, activeEnemy);
+        });
 //        CommentDto commentDto = restTemplate.patchForObject(startPath + "/ads/1/comments/1", "Тест другой", CommentDto.class);
-        CommentDto commentDto = commentController.updateComment(1, 1, comment, activeUser);
-        assertEquals(testComment, commentDto.getText());
-
-
     }
 
 
