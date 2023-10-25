@@ -1,9 +1,6 @@
 package ru.skypro.homework.entities;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 import org.hibernate.proxy.HibernateProxy;
 
 import javax.persistence.*;
@@ -14,8 +11,10 @@ import java.util.Objects;
 @Setter
 @Getter
 @ToString
+@Builder
 @NoArgsConstructor
 @Table(name = "ads")
+@AllArgsConstructor
 public class AdEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

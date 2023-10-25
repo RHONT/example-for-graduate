@@ -1,5 +1,6 @@
 package ru.skypro.homework.dto;
 
+import lombok.Builder;
 import lombok.Data;
 
 @Data
