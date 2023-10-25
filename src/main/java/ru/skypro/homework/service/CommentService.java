@@ -68,15 +68,15 @@ public class CommentService {
     /**
      * Обновления комментария
      * @param commentId - комментария
-     * @param text      - суть комментария
+     * @param commentUpdate      - суть комментария
      * @return
      */
     @Secured({"USER","ADMIN"})
-    public CommentDto updateComment(Integer commentId, UserDetails userDetails, String text) {
+    public CommentDto updateComment(Integer commentId, UserDetails userDetails, CreateOrUpdateComment commentUpdate) {
         Optional<CommentEntity> commentEntity = commentsRepository.findById(commentId);
         if (commentEntity.isPresent()) {
             checkAuthority(userDetails, commentEntity.get());
-            commentEntity.get().setText(text);
+            commentEntity.get().setText(commentUpdate.getText());
             commentsRepository.save(commentEntity.get());
         } else {
             log.debug("Comment with id={} not found", commentId);

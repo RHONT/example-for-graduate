@@ -44,9 +44,9 @@ public class CommentController {
     @PatchMapping("{adId}/comments/{commentId}")
     public CommentDto updateComment(@PathVariable Integer adId,
                                                      @PathVariable Integer commentId,
-                                                     @RequestBody String text,
+                                                     @RequestBody CreateOrUpdateComment commentUpdate,
                                     @AuthenticationPrincipal UserDetails userDetails) {
 
-        return commentService.updateComment(commentId,userDetails, text);
+        return commentService.updateComment(commentId,userDetails, commentUpdate);
     }
 }
