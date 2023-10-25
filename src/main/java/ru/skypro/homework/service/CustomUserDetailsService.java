@@ -37,6 +37,7 @@ public class CustomUserDetailsService implements UserDetailsService {
                 userEntity.get().getUsername(),
                 userEntity.get().getPassword(),
                 collectionRolesToAuth(userEntity.get().getRoles()));
+
     }
 
     private Collection<GrantedAuthority> collectionRolesToAuth(List<Role> roleList){

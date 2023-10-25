@@ -23,6 +23,7 @@ import ru.skypro.homework.repository.RoleRepository;
 import ru.skypro.homework.repository.UsersRepository;
 
 import java.util.Collections;
+import java.util.Optional;
 
 @Slf4j
 @CrossOrigin(value = "http://localhost:3000")
@@ -44,11 +45,8 @@ public class AuthController {
                 new UsernamePasswordAuthenticationToken(
                         loginDto.getUsername(),
                         loginDto.getPassword()));
-        if (authentication.isAuthenticated()) {
             SecurityContextHolder.getContext().setAuthentication(authentication);
-            return ResponseEntity.ok().build();
-        } else return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-
+            return ResponseEntity.status(HttpStatus.OK).build();
     }
 
     //todo Место для маппера user
@@ -57,12 +55,12 @@ public class AuthController {
         if (usersRepository.existsByUsername(registerDto.getUsername())) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
-        Role role = roleRepository.findByName(registerDto.getRole()).get();
+        Optional<Role> role = roleRepository.findByName("ROLE_"+registerDto.getRole());
 
         UserEntity user = userMapper.registerDtoToUserEntity(registerDto);
 
         user.setPassword(passwordEncoder.encode(registerDto.getPassword()));
-        user.setRoles(Collections.singletonList(role));
+        user.setRoles(Collections.singletonList(role.get()));
         usersRepository.save(user);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
