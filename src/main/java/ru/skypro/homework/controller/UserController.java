@@ -30,7 +30,7 @@ public class UserController {
     private final UserService userService;
     private final ImageRepository imageRepository;
 
-    @Secured({"ROLE_USER", "ROLE_ADMIN"})
+
     @ResponseStatus(HttpStatus.OK)
     @PostMapping(path = "set_password")
     public SetPasswordDto setPassword(@RequestBody SetPasswordDto setPasswordDto, @AuthenticationPrincipal UserDetails userDetails) {
@@ -38,21 +38,21 @@ public class UserController {
         return userService.setPassword(setPasswordDto, userDetails);
     }
 
-    @Secured({"ROLE_USER", "ROLE_ADMIN"})
+
     @ResponseStatus(HttpStatus.OK)
     @GetMapping(path = "me")
     public UserDto infoAboutAuthUser(@AuthenticationPrincipal UserDetails userDetails) {
         return userService.getInfoAboutUser(userDetails);
     }
 
-    @Secured({"ROLE_USER", "ROLE_ADMIN"})
+
     @ResponseStatus(HttpStatus.OK)
     @PatchMapping(path = "me")
     public UpdateUserDto updateUserDto(@RequestBody UpdateUserDto updateUserDto, @AuthenticationPrincipal UserDetails userDetails) {
         return userService.updateInfoUser(updateUserDto, userDetails);
     }
 
-    @Secured({"ROLE_USER", "ROLE_ADMIN"})
+
     @ResponseStatus(HttpStatus.OK)
     @PatchMapping(path = "me/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public void updateUserDto(@RequestParam MultipartFile avatarUser,

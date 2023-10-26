@@ -49,7 +49,6 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.OK).build();
     }
 
-    //todo Место для маппера user
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody RegisterDto registerDto) {
         if (usersRepository.existsByUsername(registerDto.getUsername())) {

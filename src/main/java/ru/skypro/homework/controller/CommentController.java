@@ -22,14 +22,14 @@ import ru.skypro.homework.service.CommentService;
 public class CommentController {
     private final CommentService commentService;
 
-    @Secured({"ROLE_USER", "ROLE_ADMIN"})
+
     @ResponseStatus(HttpStatus.OK)
     @GetMapping(path = "{id}/comments")
     public CommentsDto getComments(@PathVariable Integer id) {
         return commentService.getCommentsByIdAd(id);
     }
 
-    @Secured({"ROLE_USER", "ROLE_ADMIN"})
+
     @ResponseStatus(HttpStatus.OK)
     @PostMapping(path = "{id}/comments")
     public CommentDto addComment(@PathVariable Integer id, @RequestBody CreateOrUpdateComment CreateOrUpdateComment) {
@@ -37,14 +37,14 @@ public class CommentController {
         return commentService.addNewComment(id,CreateOrUpdateComment);
     }
 
-    @Secured({"ROLE_USER", "ROLE_ADMIN"})
+
     @ResponseStatus(HttpStatus.OK)
     @DeleteMapping(path = "{adId}/comments/{commentId}")
     public void deleteComment(@PathVariable Integer adId, @PathVariable Integer commentId, @AuthenticationPrincipal UserDetails userDetails) {
         commentService.deleteComment(adId,commentId,userDetails);
     }
 
-    @Secured({"ROLE_USER", "ROLE_ADMIN"})
+
     @ResponseStatus(HttpStatus.OK)
     @PatchMapping("{adId}/comments/{commentId}")
     public CommentDto updateComment(@PathVariable Integer adId,
