@@ -99,6 +99,8 @@ public class ControllerTest {
     RegisterDto registerDto;
 
     @BeforeEach
+    @Transactional
+    @Rollback(value = false)
     void init() {
         if (!usersRepository.existsByUsername(userNameUser) &&
                 !usersRepository.existsByUsername(adminNameUser) &&
@@ -180,8 +182,7 @@ public class ControllerTest {
     }
 
     @Test
-    @Order(2)
-    @Transactional
+    @Order(3)
     void updateUserDto() {
         String testName="Думгай";
         String testLastName="Петрович";
@@ -192,14 +193,14 @@ public class ControllerTest {
 
         assertEquals(updatedUser.getFirstName(), testName);
 
-//        update = UpdateUserDto.builder().firstName("Евгений").lastName("Белых").build();
-//        userController.updateUserDto(update, activeUser);
+        update = UpdateUserDto.builder().firstName("Евгений").lastName("Белых").build();
+        userController.updateUserDto(update, activeUser);
     }
 
     @Test
     @Transactional
     @Rollback(value = false)
-    @Order(3)
+    @Order(2)
     void addAd() throws IOException {
         String testTitle = "Test_Title";
         int testPrice = 128;
