@@ -29,12 +29,10 @@ public class ImageService {
      * @return
      * @throws IOException
      */
-    public ImageEntity createImageEntityAndSaveBD(MultipartFile file) throws IOException {
+    public ImageEntity createImageEntity(MultipartFile file) throws IOException {
         ImageEntity image = new ImageEntity();
         imageMapper.updateImageEntityFromFile(file,image);
-        imageRepository.save(image);
-        image.setFilePath(source+image.getId());
-        imageRepository.save(image);
+        image.setFilePath(source);
         return image;
     }
 

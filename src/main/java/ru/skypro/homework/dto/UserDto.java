@@ -13,10 +13,3 @@ public class UserDto {
     private String image;
 }
 
-//"id": 0,
-//        "email": "string",
-//        "firstName": "string",
-//        "lastName": "string",
-//        "phone": "string",
-//        "role": "USER",
-//        "image": "string"

@@ -3,6 +3,7 @@ package ru.skypro.homework.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -35,15 +36,17 @@ public class CommentService {
     /**
      * Добавляем комментарий к объявлению
      * @param id
-     * @param сreateOrUpdateComment
+     * @param text
      * @return
      */
-    public CommentDto addNewComment(Integer id, CreateOrUpdateComment сreateOrUpdateComment) {
+
+
+    public CommentDto addNewComment(Integer id, CreateOrUpdateComment CreateOrUpdateComment) {
         AdEntity ad = adsRepository.findById(id).get();
 
         CommentEntity comment = CommentEntity.builder().
                 createdAt(Instant.now().toEpochMilli()).
-                text(сreateOrUpdateComment.getText()).
+                text(CreateOrUpdateComment.getText()).
                 adEntity(ad).
                 userEntity(ad.getAuthor()).build();
         commentsRepository.save(comment);
@@ -55,23 +58,32 @@ public class CommentService {
      * @param adId      - id объявления
      * @param commentId - id комментария
      */
+
     @Transactional
-    public void deleteComment(Integer adId, Integer commentId) {
-        commentsRepository.deleteByCommentIdAndAdEntity_Pk(commentId, adId);
+    public void deleteComment(Integer adId, Integer commentId,UserDetails userDetails) {
+        Optional<CommentEntity> commentEntity=commentsRepository.findById(commentId);
+        if (commentEntity.isPresent()) {
+            checkAuthority(userDetails, commentEntity.get());
+            commentsRepository.deleteByCommentIdAndAdEntity_Pk(commentId, adId);
+        } else {
+            log.debug("Comment with id={} not found", commentId);
+            throw new NoAdException("Comment with id = " + commentId + "not found");
+        }
     }
 
     //todo Зачем нам работать с adId, если мы можем сразу работать с commentId?
     /**
      * Обновления комментария
      * @param commentId - комментария
-     * @param text      - суть комментария
+     * @param commentUpdate      - суть комментария
      * @return
      */
-    public CommentDto updateComment(Integer commentId, UserDetails userDetails, String text) {
+
+    public CommentDto updateComment(Integer commentId, UserDetails userDetails, CreateOrUpdateComment commentUpdate) {
         Optional<CommentEntity> commentEntity = commentsRepository.findById(commentId);
         if (commentEntity.isPresent()) {
             checkAuthority(userDetails, commentEntity.get());
-            commentEntity.get().setText(text);
+            commentEntity.get().setText(commentUpdate.getText());
             commentsRepository.save(commentEntity.get());
         } else {
             log.debug("Comment with id={} not found", commentId);
@@ -111,7 +123,7 @@ public class CommentService {
      * @return
      */
     private boolean userIsAdmin(UserDetails userDetails) {
-        return userDetails.getAuthorities().contains(new SimpleGrantedAuthority("ADMIN"));
+        return userDetails.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"));
     }
 
     /**
