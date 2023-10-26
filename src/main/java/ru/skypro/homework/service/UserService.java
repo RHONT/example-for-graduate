@@ -39,6 +39,7 @@ public class UserService {
         usersRepository.save(userEntity);
     }
 
+    @Transactional
     public UpdateUserDto updateInfoUser(UpdateUserDto updateUserDto, UserDetails userDetails) {
         UserEntity user = usersRepository.findByUsername(userDetails.getUsername()).get();
         user = userMapper.updateByUpdateUserDTO(updateUserDto, user);
