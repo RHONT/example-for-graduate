@@ -175,6 +175,7 @@ public class ControllerTest {
     }
 
     @Test
+    @Transactional
     void addAd() throws IOException {
         String testTitle = "Test_Title";
         int testPrice = 128;
