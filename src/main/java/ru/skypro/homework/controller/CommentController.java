@@ -29,11 +29,10 @@ public class CommentController {
         return commentService.getCommentsByIdAd(id);
     }
 
-
+    @Secured("ROLE_USER")
     @ResponseStatus(HttpStatus.OK)
     @PostMapping(path = "{id}/comments")
     public CommentDto addComment(@PathVariable Integer id, @RequestBody CreateOrUpdateComment CreateOrUpdateComment) {
-
         return commentService.addNewComment(id,CreateOrUpdateComment);
     }
 

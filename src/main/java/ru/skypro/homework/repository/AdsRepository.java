@@ -3,6 +3,7 @@ package ru.skypro.homework.repository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import ru.skypro.homework.entities.AdEntity;
+import ru.skypro.homework.entities.ImageEntity;
 import ru.skypro.homework.entities.UserEntity;
 
 import java.util.ArrayList;
@@ -16,5 +17,6 @@ public interface AdsRepository extends JpaRepository<AdEntity, Integer> {
     Optional<AdEntity> findByAuthor(UserEntity user);
 
     ArrayList<AdEntity> findAll();
+    Optional<AdEntity> findByImageEntity(ImageEntity imageEntity);
 
 }
