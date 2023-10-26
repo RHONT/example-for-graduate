@@ -170,7 +170,7 @@ public class AdService {
      * @return
      */
     private boolean userIsAdmin(UserDetails userDetails) {
-        return userDetails.getAuthorities().contains(new SimpleGrantedAuthority("ADMIN"));
+        return userDetails.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"));
     }
 
     /**

@@ -9,7 +9,6 @@ import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 import ru.skypro.homework.config.WebSecurityConfig;
 import ru.skypro.homework.controller.AdsController;
@@ -28,6 +27,7 @@ import ru.skypro.homework.service.CustomUserDetailsService;
 import ru.skypro.homework.service.ImageService;
 import ru.skypro.homework.utilclass.JavaFileToMultipartFile;
 
+import javax.annotation.PostConstruct;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
@@ -97,6 +97,18 @@ public class ControllerTest {
 
     RegisterDto registerDto;
 
+    @PostConstruct
+    void registerPersons(){
+        authController.login(LoginDto.builder().username(userNameUser).password("123123123").build());
+        authController.login(LoginDto.builder().username(adminNameUser).password("123123123").build());
+        authController.login(LoginDto.builder().username(enemyNameUser).password("123123123").build());
+
+        activeUser = customUserDetailsService.loadUserByUsername(userNameUser);
+        activeAdmin = customUserDetailsService.loadUserByUsername(adminNameUser);
+        activeEnemy = customUserDetailsService.loadUserByUsername(enemyNameUser);
+        
+    }
+
     @BeforeEach
     void init() {
 //        restTemplate.postForEntity("http://localhost:" + port + "/login", loginDto, ResponseEntity.class);
@@ -117,7 +129,7 @@ public class ControllerTest {
     }
 
     @Test
-//    @Disabled
+    @Disabled
     void login() {
         LoginDto loginDto = LoginDto.builder().username(userNameUser).password("123123123").build();
         int statusCodeValue = authController.login(loginDto).getStatusCodeValue();
@@ -154,9 +166,8 @@ public class ControllerTest {
 
         UpdateUserDto update = UpdateUserDto.builder().firstName(testName).lastName(testLastName).build();
 
-        authController.login(LoginDto.builder().username(userNameUser).password("123123123").build());
-        activeUser = customUserDetailsService.loadUserByUsername(userNameUser);
         UpdateUserDto updatedUser = userController.updateUserDto(update, activeUser);
+
         assertEquals(updatedUser.getFirstName(), testName);
 
         update = UpdateUserDto.builder().firstName("Евгений").lastName("Белых").build();
@@ -169,8 +180,6 @@ public class ControllerTest {
         int testPrice = 128;
         String testDesc = "Test_Description";
 
-
-        activeUser = customUserDetailsService.loadUserByUsername(userNameUser);
         CreateOrUpdateAdDto newAd = CreateOrUpdateAdDto.builder().
                 title(testTitle).
                 price(testPrice).
@@ -191,7 +200,6 @@ public class ControllerTest {
     @Test
     @Transactional
     void getAdsMe() {
-        activeUser = customUserDetailsService.loadUserByUsername(userNameUser);
         AdsDto adsDto = adsController.getAdsMe(activeUser);
         UserEntity user = usersRepository.findByUsername(activeUser.getUsername()).get();
         assertEquals(user.getAdEntityList().size(), adsDto.getCount());
@@ -205,10 +213,9 @@ public class ControllerTest {
     @Test
     void addComment() {
         String testComment="testComment";
-        activeUser = customUserDetailsService.loadUserByUsername(userNameUser);
         CreateOrUpdateComment comment = new CreateOrUpdateComment();
         comment.setText(testComment);
-        CommentDto commentDto = commentController.addComment(1, comment);
+        CommentDto commentDto = commentController.addComment(2, comment);
         assertEquals(commentDto.getText(), testComment);
     }
 
@@ -216,21 +223,34 @@ public class ControllerTest {
     @Test
     @Transactional
     void getComments() {
-        activeUser = customUserDetailsService.loadUserByUsername(userNameUser);
-        AdEntity ad = adsRepository.findById(1).get();
+        AdEntity ad = adsRepository.findById(2).get();
         CommentsDto comments = commentController.getComments(ad.getPk());
         assertEquals(ad.getCommentEntityList().size(), comments.getCount());
     }
 
 
-    //todo авторизация
     @Test
     @Transactional
     void deleteComment() {
-        activeUser = customUserDetailsService.loadUserByUsername(userNameUser);
-        commentController.deleteComment(1, 1);
-        Optional<CommentEntity> comment = commentsRepository.findById(1);
+        commentController.deleteComment(2, 2,activeUser);
+        Optional<CommentEntity> comment = commentsRepository.findById(2);
         assertTrue(comment.isEmpty());
+    }
+
+    @Test
+    @Transactional
+    void deleteCommentAdmin() {
+        commentController.deleteComment(2, 2,activeAdmin);
+        Optional<CommentEntity> comment = commentsRepository.findById(2);
+        assertTrue(comment.isEmpty());
+    }
+
+    @Test
+    @Transactional
+    void deleteCommentEnemyUser() {
+        assertThrows(UnauthorizedException.class,()->{
+            commentController.deleteComment(2, 2,activeEnemy);
+        });
     }
 
 
@@ -242,21 +262,17 @@ public class ControllerTest {
         String adminComment="Admin_Comment";
         String enemyComment="Enemy_Comment";
 
-        activeUser = customUserDetailsService.loadUserByUsername(userNameUser);
-        activeAdmin = customUserDetailsService.loadUserByUsername(adminNameUser);
-        activeEnemy = customUserDetailsService.loadUserByUsername(enemyNameUser);
-
         comment.setText(userComment);
-        CommentDto commentUserDto = commentController.updateComment(1, 1, comment, activeUser);
+        CommentDto commentUserDto = commentController.updateComment(2, 2, comment, activeUser);
         assertEquals(userComment, commentUserDto.getText());
 
         comment.setText(adminComment);
-        CommentDto commentAdminDto = commentController.updateComment(1, 1, comment, activeAdmin);
+        CommentDto commentAdminDto = commentController.updateComment(2, 2, comment, activeAdmin);
         assertEquals(adminComment, commentAdminDto.getText());
 
         comment.setText(enemyComment);
         assertThrows(UnauthorizedException.class,()->{
-            commentController.updateComment(1, 1, comment, activeEnemy);
+            commentController.updateComment(2, 2, comment, activeEnemy);
         });
 //        CommentDto commentDto = restTemplate.patchForObject(startPath + "/ads/1/comments/1", "Тест другой", CommentDto.class);
     }

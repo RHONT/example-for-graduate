@@ -60,8 +60,15 @@ public class CommentService {
      */
 
     @Transactional
-    public void deleteComment(Integer adId, Integer commentId) {
-        commentsRepository.deleteByCommentIdAndAdEntity_Pk(commentId, adId);
+    public void deleteComment(Integer adId, Integer commentId,UserDetails userDetails) {
+        Optional<CommentEntity> commentEntity=commentsRepository.findById(commentId);
+        if (commentEntity.isPresent()) {
+            checkAuthority(userDetails, commentEntity.get());
+            commentsRepository.deleteByCommentIdAndAdEntity_Pk(commentId, adId);
+        } else {
+            log.debug("Comment with id={} not found", commentId);
+            throw new NoAdException("Comment with id = " + commentId + "not found");
+        }
     }
 
     //todo Зачем нам работать с adId, если мы можем сразу работать с commentId?
@@ -116,7 +123,7 @@ public class CommentService {
      * @return
      */
     private boolean userIsAdmin(UserDetails userDetails) {
-        return userDetails.getAuthorities().contains(new SimpleGrantedAuthority("ADMIN"));
+        return userDetails.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"));
     }
 
     /**

@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -30,6 +31,7 @@ public class AdsController {
 
 
     @ResponseStatus(HttpStatus.OK)
+    @Secured({"ROLE_USER", "ROLE_ADMIN"})
     @GetMapping()
     public AdsDto getAllAds() {
         return adService.findAllAds();
@@ -44,6 +46,7 @@ public class AdsController {
     }
 
     @ResponseStatus(HttpStatus.OK)
+    @Secured({"ROLE_USER", "ROLE_ADMIN"})
     @GetMapping(path = "{id}")
     public ExtendedAdDto getInfoAboutAd(@PathVariable Integer id) {
         log.info("Activated getAds method.");
@@ -52,12 +55,14 @@ public class AdsController {
 
 
     @ResponseStatus(HttpStatus.OK)
+    @Secured({"ROLE_USER", "ROLE_ADMIN"})
     @DeleteMapping(path = "{id}")
     public void removeAd(@PathVariable Integer id, @AuthenticationPrincipal UserDetails userDetails) {
         adService.deleteAdEntity(id, userDetails);
     }
 
     @ResponseStatus(HttpStatus.OK)
+    @Secured({"ROLE_USER", "ROLE_ADMIN"})
     @PatchMapping(path = "/{id_ad}")
     public AdDto updateAds(@PathVariable Integer id_ad,
                            @RequestBody CreateOrUpdateAdDto updateAdDto,
@@ -67,13 +72,14 @@ public class AdsController {
     }
 
     @ResponseStatus(HttpStatus.OK)
+    @Secured({"ROLE_USER", "ROLE_ADMIN"})
     @GetMapping(path = "/me")
     public AdsDto getAdsMe(@AuthenticationPrincipal UserDetails userDetails) {
         log.info("Activated getAdsMe method.");
         return adService.findMyAds(userDetails);
     }
 
-
+    @Secured({"ROLE_USER", "ROLE_ADMIN"})
     @PatchMapping(path = "/{id}/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<byte[]> updateImageAd(@PathVariable(name = "id") Integer id,
                                               @RequestParam("image") MultipartFile image) throws IOException {
