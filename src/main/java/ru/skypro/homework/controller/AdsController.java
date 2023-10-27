@@ -24,7 +24,7 @@ import java.io.IOException;
 @RestController
 @RequiredArgsConstructor
 @CrossOrigin(value = "http://localhost:3000")
-@RequestMapping("ads/")
+@RequestMapping("ads")
 public class AdsController {
     private final AdService adService;
     private final ImageService imageService;
