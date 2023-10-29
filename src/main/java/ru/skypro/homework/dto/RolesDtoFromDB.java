@@ -1,5 +1,5 @@
 package ru.skypro.homework.dto;
 
-public interface RolesDtoInterface {
+public interface RolesDtoFromDB {
     String getName();
 }

@@ -57,12 +57,13 @@ public class UserService {
 
     }
 
-
+    @Transactional
     public UserDto getInfoAboutUser(UserDetails userDetails) {
         UserEntity user = usersRepository.findByUsername(userDetails.getUsername()).get();
         return userMapper.userEntityToUserDto(user);
     }
 
+    @Transactional
     public SetPasswordDto setPassword(SetPasswordDto setPasswordDto, UserDetails userDetails) {
         Optional<UserEntity> user = usersRepository.findByUsername(userDetails.getUsername());
         setPasswordDto.setCurrentPassword(userDetails.getPassword());

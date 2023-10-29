@@ -32,7 +32,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 @Slf4j
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class TestUserAndAuthController {
+public class TestRestTemplateUserAndAuthController {
     @LocalServerPort
     private int port;
     @Autowired

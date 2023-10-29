@@ -8,11 +8,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-import ru.skypro.homework.dto.LoginDtoInterface;
-import ru.skypro.homework.dto.RolesDtoInterface;
-import ru.skypro.homework.dto.UserMinimalDataDto;
-import ru.skypro.homework.entities.Role;
-import ru.skypro.homework.entities.UserEntity;
+import ru.skypro.homework.dto.LoginDtoFromDB;
+import ru.skypro.homework.dto.RolesDtoFromDB;
 import ru.skypro.homework.repository.UsersRepository;
 
 import java.util.Collection;
@@ -29,8 +26,8 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) {
-        Optional<LoginDtoInterface> userEntity = usersRepository.findLoginAndPasswordByUserName(username);
-        List<RolesDtoInterface> rolesEntity = usersRepository.findRolesByUserName(username);
+        Optional<LoginDtoFromDB> userEntity = usersRepository.findLoginAndPasswordByUserName(username);
+        List<RolesDtoFromDB> rolesEntity = usersRepository.findRolesByUserName(username);
 
         if (userEntity.isEmpty()) {
             log.debug("User with name {} not found", username);
@@ -43,7 +40,7 @@ public class CustomUserDetailsService implements UserDetailsService {
                 collectionRolesToAuth(rolesEntity));
     }
 
-    private Collection<GrantedAuthority> collectionRolesToAuth(List<RolesDtoInterface> roleList){
+    private Collection<GrantedAuthority> collectionRolesToAuth(List<RolesDtoFromDB> roleList){
         return roleList.stream().map(el->new SimpleGrantedAuthority("ROLE_"+el.getName())).collect(Collectors.toList());
     }
 }
