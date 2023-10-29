@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.*;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -17,6 +18,10 @@ import ru.skypro.homework.repository.UsersRepository;
 import ru.skypro.homework.utilclass.JavaFileToMultipartFile;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.Objects;
 
@@ -86,24 +91,29 @@ public class TestUserAndAuthController {
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
     }
 
+    /**
+     * Боль надо запомнить:
+     * RestTemplate не понимает что такое file или MultiPartFile.
+     * В него можно засунуть только FileSystemResource
+     * Метод getTestFile(), делает это преобразование.
+     * Правда не уверен, что делаю его правильно, но оно работает.
+     * @throws IOException
+     */
     @Test
-    void uploadAvatarUser(){
-
-        MultipartFile  file=  new JavaFileToMultipartFile(new File("src/main/resources/image/test.jpg"));
-
+    void uploadAvatarUser() throws IOException {
         HttpHeaders headers = new HttpHeaders();
+
         headers.setBasicAuth("enemy@gmail.com", "123123123");
         headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+
         MultiValueMap<String, Object> form = new LinkedMultiValueMap<>();
-        form.add("avatarUser", file);
-
+        form.add("image", getTestFile());
         HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(form, headers);
-
 
         ResponseEntity<Void> exchange = restTemplate.exchange
                 (uploadAvatarPath, HttpMethod.PATCH, requestEntity, Void.class);
-        assertThat(exchange.getStatusCode()).isEqualTo(HttpStatus.OK);
 
+        assertThat(exchange.getStatusCode()).isEqualTo(HttpStatus.OK);
     }
 
     @Test
@@ -173,6 +183,13 @@ public class TestUserAndAuthController {
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
         return new HttpEntity<>(headers);
+    }
+
+    private FileSystemResource getTestFile() throws IOException {
+        MultipartFile  file=  new JavaFileToMultipartFile(new File("src/main/resources/image/test.jpg"));
+        Path testFile = Paths.get("src/main/resources/image/test.jpg");
+        Files.write(testFile, file.getBytes());
+        return new FileSystemResource(testFile.toFile());
     }
 
 }

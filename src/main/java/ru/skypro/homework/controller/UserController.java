@@ -50,7 +50,7 @@ public class UserController {
 
     @ResponseStatus(HttpStatus.OK)
     @PatchMapping(path = "me/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public void uploadAvatarUser(@RequestParam MultipartFile avatarUser,
+    public void uploadAvatarUser(@RequestParam(name = "image") MultipartFile avatarUser,
                                  @AuthenticationPrincipal UserDetails userDetails) throws IOException {
         log.info("User {} update avatar", "Id user");
         userService.uploadAvatar(avatarUser, userDetails);
