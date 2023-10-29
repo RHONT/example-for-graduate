@@ -96,7 +96,6 @@ public class TestRestTemplateUserAndAuthController {
      * RestTemplate не понимает что такое file или MultiPartFile.
      * В него можно засунуть только FileSystemResource
      * Метод getTestFile(), делает это преобразование.
-     * Правда не уверен, что делаю его правильно, но оно работает.
      * @throws IOException
      */
     @Test
@@ -185,11 +184,9 @@ public class TestRestTemplateUserAndAuthController {
         return new HttpEntity<>(headers);
     }
 
-    private FileSystemResource getTestFile() throws IOException {
-        MultipartFile  file=  new JavaFileToMultipartFile(new File("src/main/resources/image/test.jpg"));
+    private FileSystemResource getTestFile() {
         Path testFile = Paths.get("src/main/resources/image/test.jpg");
-        Files.write(testFile, file.getBytes());
-        return new FileSystemResource(testFile.toFile());
+        return new FileSystemResource(testFile);
     }
 
 }
