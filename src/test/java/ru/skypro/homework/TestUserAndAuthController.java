@@ -8,13 +8,15 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.*;
-import org.springframework.security.authentication.AuthenticationManager;
-import ru.skypro.homework.controller.AuthController;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.multipart.MultipartFile;
 import ru.skypro.homework.controller.UserController;
 import ru.skypro.homework.dto.*;
-import ru.skypro.homework.repository.RoleRepository;
 import ru.skypro.homework.repository.UsersRepository;
+import ru.skypro.homework.utilclass.JavaFileToMultipartFile;
 
+import java.io.File;
 import java.util.Collections;
 import java.util.Objects;
 
@@ -25,34 +27,21 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 @Slf4j
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class TestUserController {
-
+public class TestUserAndAuthController {
     @LocalServerPort
     private int port;
-
     @Autowired
     private UserController userController;
-
-    @Autowired
-    private AuthController authController;
-
     @Autowired
     private UsersRepository usersRepository;
-
-    @Autowired
-    private AuthenticationManager authManager;
-
-    @Autowired
-    private RoleRepository roleRepository;
-
     @Autowired
     private TestRestTemplate restTemplate;
 
     String registerPath;
     String loginPath;
     String setPasswordPath;
-    String infoAboutUserdPath;
-
+    String infoAboutUserPath;
+    String uploadAvatarPath;
     LoginDto testLoginDto;
 
     @BeforeEach
@@ -60,9 +49,10 @@ public class TestUserController {
         registerPath = "http://localhost:" + port + "/register";
         loginPath = "http://localhost:" + port + "/login";
         setPasswordPath = "http://localhost:" + port + "/users/set_password";
-        infoAboutUserdPath = "http://localhost:" + port + "/users/me";
+        infoAboutUserPath = "http://localhost:" + port + "/users/me";
+        uploadAvatarPath ="http://localhost:" + port + "/users/me/image";
 
-        testLoginDto=new LoginDto("enemy@gmail.com", "123123123");
+        testLoginDto=new LoginDto("grand@gmail.com", "123123123");
     }
 
     @Test
@@ -97,6 +87,26 @@ public class TestUserController {
     }
 
     @Test
+    void uploadAvatarUser(){
+
+        MultipartFile  file=  new JavaFileToMultipartFile(new File("src/main/resources/image/test.jpg"));
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBasicAuth("enemy@gmail.com", "123123123");
+        headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+        MultiValueMap<String, Object> form = new LinkedMultiValueMap<>();
+        form.add("avatarUser", file);
+
+        HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(form, headers);
+
+
+        ResponseEntity<Void> exchange = restTemplate.exchange
+                (uploadAvatarPath, HttpMethod.PATCH, requestEntity, Void.class);
+        assertThat(exchange.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+    }
+
+    @Test
     void setPassword() {
         SetPasswordDto setPasswordDto = new SetPasswordDto();
         setPasswordDto.setNewPassword("123123123");
@@ -119,11 +129,11 @@ public class TestUserController {
     @Test
     void infoAboutUser() {
         ResponseEntity<UserDto> exchange1 =
-                restTemplate.exchange(infoAboutUserdPath, HttpMethod.GET, getHttpEmpty(), UserDto.class);
+                restTemplate.exchange(infoAboutUserPath, HttpMethod.GET, getHttpEmpty(), UserDto.class);
         assertEquals(HttpStatus.UNAUTHORIZED,exchange1.getStatusCode());
 
         ResponseEntity<UserDto> exchange =
-                restTemplate.exchange(infoAboutUserdPath, HttpMethod.GET, getHttpWithAuthAndNotBody(), UserDto.class);
+                restTemplate.exchange(infoAboutUserPath, HttpMethod.GET, getHttpWithAuthAndNotBody(), UserDto.class);
         assertNotNull(exchange.getBody().getId());
     }
 
@@ -134,7 +144,7 @@ public class TestUserController {
 
         ResponseEntity<UpdateUserDto> exchange =
                 restTemplate.exchange
-                        (infoAboutUserdPath, HttpMethod.PATCH, getHttpWithAuthAndBody(updateUserDto), UpdateUserDto.class);
+                        (infoAboutUserPath, HttpMethod.PATCH, getHttpWithAuthAndBody(updateUserDto), UpdateUserDto.class);
 
         assertEquals(HttpStatus.OK, exchange.getStatusCode());
         assertEquals("ChangeTest", Objects.requireNonNull(exchange.getBody()).getFirstName());

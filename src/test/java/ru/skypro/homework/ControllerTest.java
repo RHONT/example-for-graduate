@@ -206,7 +206,8 @@ public class ControllerTest {
                 price(testPrice).
                 description(testDesc).build();
 
-        JavaFileToMultipartFile myMultiPartFile = new JavaFileToMultipartFile(new File("src/main/resources/image/test.jpg"));
+        JavaFileToMultipartFile myMultiPartFile =
+                new JavaFileToMultipartFile(new File("src/main/resources/image/test.jpg"));
         AdDto adDto = adsController.addAd(newAd, myMultiPartFile, activeUser);
         assertEquals(testTitle, adDto.getTitle());
     }
