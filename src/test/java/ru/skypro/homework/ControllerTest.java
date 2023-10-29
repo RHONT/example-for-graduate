@@ -148,7 +148,7 @@ public class ControllerTest {
     }
 
     @Test
-    @Disabled
+//    @Disabled
     void login() {
         LoginDto loginDto = LoginDto.builder().username(userNameUser).password("123123123").build();
         int statusCodeValue = authController.login(loginDto).getStatusCodeValue();

@@ -2,25 +2,32 @@ package ru.skypro.homework;
 
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.http.HttpResponse;
 import org.apache.http.impl.client.HttpClients;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.*;
 import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.DefaultResponseErrorHandler;
 import org.springframework.web.client.RestTemplate;
 import ru.skypro.homework.controller.AuthController;
 import ru.skypro.homework.controller.UserController;
+import ru.skypro.homework.dto.LoginDto;
 import ru.skypro.homework.dto.RegisterDto;
 import ru.skypro.homework.dto.SetPasswordDto;
+import ru.skypro.homework.repository.RoleRepository;
 import ru.skypro.homework.repository.UsersRepository;
 
 import java.io.IOException;
@@ -42,10 +49,16 @@ public class TestUserController {
     private UserController userController;
 
     @Autowired
+    private AuthController authController;
+
+    @Autowired
     private UsersRepository usersRepository;
 
-//    @Autowired
-//    private AuthController authController;
+    @Autowired
+    private AuthenticationManager authManager;
+
+    @Autowired
+    private RoleRepository roleRepository;
 
     @Autowired
     private TestRestTemplate restTemplate;
@@ -90,9 +103,26 @@ public class TestUserController {
     }
 
     @Test
+    void login(){
+        LoginDto loginDto=new LoginDto("user@gmail.com","123123123");
+        ResponseEntity<?> responseEntity = restTemplate.postForObject(loginPath, loginDto, ResponseEntity.class);
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+    }
+
+
+    @Test
     @Order(3)
     @Transactional
+    @Rollback(value = false)
     void setPassword() {
+        Authentication authentication = authManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        "super_user@gmail.com",
+                        "123123123"));
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+
         SetPasswordDto setPasswordDto = new SetPasswordDto();
         setPasswordDto.setNewPassword("1");
         setPasswordDto.setCurrentPassword("123123123");
@@ -117,10 +147,11 @@ public class TestUserController {
         });
 
         SetPasswordDto responseSetDto =
-                restTemplate2.postForObject(setPasswordPath, httpEntity, SetPasswordDto.class);
+                restTemplate.postForObject(setPasswordPath, httpEntity, SetPasswordDto.class);
+
         log.info(responseSetDto.toString());
 
-        assert responseSetDto != null;
+        assertThat(responseSetDto.getNewPassword()).isEqualTo("1");
     }
 
 }
