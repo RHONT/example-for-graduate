@@ -96,7 +96,7 @@ public class TestUserController {
     @Order(3)
     void setPassword() {
         SetPasswordDto setPasswordDto = new SetPasswordDto();
-        setPasswordDto.setNewPassword("123");
+        setPasswordDto.setNewPassword("1");
         setPasswordDto.setCurrentPassword("1");
 
         HttpHeaders headers = new HttpHeaders();
@@ -111,6 +111,11 @@ public class TestUserController {
         log.info(responseSetDto.toString());
 
         assertNotNull(responseSetDto.getNewPassword());
+    }
+
+    @Test
+    void infoAboutUser(){
+
     }
 
 }
