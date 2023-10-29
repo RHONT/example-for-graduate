@@ -24,7 +24,7 @@ import java.io.IOException;
 @RestController
 @RequiredArgsConstructor
 @CrossOrigin(value = "http://localhost:3000")
-@RequestMapping("ads/")
+@RequestMapping("ads")
 public class AdsController {
     private final AdService adService;
     private final ImageService imageService;
@@ -39,14 +39,13 @@ public class AdsController {
 
     @ResponseStatus(HttpStatus.OK)
     @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
-    public AdDto addAd(@RequestPart(name = "properties") CreateOrUpdateAdDto properties,
+    public AdDto addAd(@RequestPart CreateOrUpdateAdDto properties,
                        @RequestPart(name = "image") MultipartFile file,
                        @AuthenticationPrincipal UserDetails userDetails) throws IOException {
         return adService.adAd(properties, file, userDetails);
     }
 
     @ResponseStatus(HttpStatus.OK)
-
     @GetMapping(path = "{id}")
     public ExtendedAdDto getInfoAboutAd(@PathVariable Integer id) {
         log.info("Activated getAds method.");
@@ -55,24 +54,22 @@ public class AdsController {
 
 
     @ResponseStatus(HttpStatus.OK)
-
     @DeleteMapping(path = "{id}")
     public void removeAd(@PathVariable Integer id, @AuthenticationPrincipal UserDetails userDetails) {
         adService.deleteAdEntity(id, userDetails);
     }
 
     @ResponseStatus(HttpStatus.OK)
-
     @PatchMapping(path = "/{id_ad}")
     public AdDto updateAds(@PathVariable Integer id_ad,
                            @RequestBody CreateOrUpdateAdDto updateAdDto,
                            @AuthenticationPrincipal UserDetails userDetails) {
         log.info("Activated updateAds method.");
-        return adService.updateAd(id_ad, updateAdDto,userDetails);
+        return adService.updateAd(id_ad, updateAdDto, userDetails);
     }
 
+    @Secured("ROLE_USER")
     @ResponseStatus(HttpStatus.OK)
-
     @GetMapping(path = "/me")
     public AdsDto getAdsMe(@AuthenticationPrincipal UserDetails userDetails) {
         log.info("Activated getAdsMe method.");
@@ -80,11 +77,13 @@ public class AdsController {
     }
 
 
+
     @PatchMapping(path = "/{id}/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<byte[]> updateImageAd(@PathVariable(name = "id") Integer id,
-                                              @RequestParam("image") MultipartFile image) throws IOException {
+                                                @RequestParam("image") MultipartFile image,
+                                                @AuthenticationPrincipal UserDetails userDetails) throws IOException {
         log.info("Activated updateImage method.");
-        byte[] dataForResponse=imageService.updateImageEntity(id,image).getData();
+        byte[] dataForResponse = imageService.updateImageAdEntity(id, image,userDetails).getData();
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_OCTET_STREAM).body(dataForResponse);
     }
 

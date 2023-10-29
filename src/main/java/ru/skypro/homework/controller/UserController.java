@@ -12,14 +12,15 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import ru.skypro.homework.dto.SetPasswordDto;
-import ru.skypro.homework.dto.UpdateUserDto;
-import ru.skypro.homework.dto.UserDto;
+import ru.skypro.homework.dto.*;
 import ru.skypro.homework.entities.ImageEntity;
 import ru.skypro.homework.repository.ImageRepository;
+import ru.skypro.homework.repository.UsersRepository;
 import ru.skypro.homework.service.UserService;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @RestController
@@ -29,7 +30,6 @@ import java.io.IOException;
 public class UserController {
     private final UserService userService;
     private final ImageRepository imageRepository;
-
 
     @ResponseStatus(HttpStatus.OK)
     @PostMapping(path = "set_password")

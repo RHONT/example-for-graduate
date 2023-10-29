@@ -28,11 +28,8 @@ import ru.skypro.homework.service.CustomUserDetailsService;
 import ru.skypro.homework.service.ImageService;
 import ru.skypro.homework.utilclass.JavaFileToMultipartFile;
 
-import javax.annotation.PostConstruct;
 import java.io.File;
 import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -151,7 +148,7 @@ public class ControllerTest {
     }
 
     @Test
-    @Disabled
+//    @Disabled
     void login() {
         LoginDto loginDto = LoginDto.builder().username(userNameUser).password("123123123").build();
         int statusCodeValue = authController.login(loginDto).getStatusCodeValue();
@@ -188,9 +185,7 @@ public class ControllerTest {
         String testLastName="Петрович";
 
         UpdateUserDto update = UpdateUserDto.builder().firstName(testName).lastName(testLastName).build();
-
         UpdateUserDto updatedUser = userController.updateUserDto(update, activeUser);
-
         assertEquals(updatedUser.getFirstName(), testName);
 
         update = UpdateUserDto.builder().firstName("Евгений").lastName("Белых").build();
@@ -211,8 +206,8 @@ public class ControllerTest {
                 price(testPrice).
                 description(testDesc).build();
 
-        JavaFileToMultipartFile mf = new JavaFileToMultipartFile(new File("src/main/resources/image/test.jpg"));
-        AdDto adDto = adsController.addAd(newAd, mf, activeUser);
+        JavaFileToMultipartFile myMultiPartFile = new JavaFileToMultipartFile(new File("src/main/resources/image/test.jpg"));
+        AdDto adDto = adsController.addAd(newAd, myMultiPartFile, activeUser);
         assertEquals(testTitle, adDto.getTitle());
     }
 
@@ -305,7 +300,6 @@ public class ControllerTest {
         });
     }
 
-
     //todo почему-то не работает restTemplate
     @Test
     @Transactional
@@ -315,7 +309,6 @@ public class ControllerTest {
         int numbAd=ad.getPk();
         CommentEntity comment=ad.getCommentEntityList().get(0);
         int numbComment=comment.getCommentId();
-
 
         CreateOrUpdateComment commentDto = new CreateOrUpdateComment();
         String userComment="User_Comment";
@@ -334,7 +327,8 @@ public class ControllerTest {
         assertThrows(UnauthorizedException.class,()->{
             commentController.updateComment(numbAd, numbComment, commentDto, activeEnemy);
         });
-//        CommentDto commentDto = restTemplate.patchForObject(startPath + "/ads/1/comments/1", "Тест другой", CommentDto.class);
+
+//        CommentDto commentDto = restTemplate.patchForObject(startPath + "/ads/{idAdd}/comments/{idComment}", commentAdminDto,CommentDto.class,"1","1");
     }
 
 
