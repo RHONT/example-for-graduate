@@ -23,6 +23,7 @@ import ru.skypro.homework.repository.RoleRepository;
 import ru.skypro.homework.repository.UsersRepository;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 @Slf4j
@@ -55,7 +56,8 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
         Optional<Role> role= Optional.empty();
-        if (registerDto.getRole()==null || registerDto.getRole().isEmpty() || registerDto.getRole().isBlank()) {
+
+        if (registerDto.getRole()==null || !checkRole(registerDto.getRole())) {
             role = roleRepository.findByName("USER");
         } else {
             role = roleRepository.findByName(registerDto.getRole());
@@ -67,5 +69,14 @@ public class AuthController {
         user.setRoles(Collections.singletonList(role.get()));
         usersRepository.save(user);
         return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+
+    private boolean checkRole(String role) {
+        for (var element : ru.skypro.homework.dto.Role.values()) {
+            if (element.name().equals(role)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

@@ -29,7 +29,6 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) {
-
         Optional<LoginDtoInterface> userEntity = usersRepository.findLoginAndPasswordByUserName(username);
         List<RolesDtoInterface> rolesEntity = usersRepository.findRolesByUserName(username);
 
