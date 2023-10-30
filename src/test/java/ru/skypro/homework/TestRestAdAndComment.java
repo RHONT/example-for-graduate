@@ -31,7 +31,6 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
  * user@gmail.com - права USER
  * enemy@gmail.com- права USER
  * admin@gmail.com- права ADMIN
- * Должно существовать объявление с id = 1
  */
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -60,6 +59,7 @@ public class TestRestAdAndComment {
     String updateImageAdPath;
 
     Integer testIdAd;
+    CreateOrUpdateAdDto updateAdDto;
 
 
 //    public TestRestAdAndComment(AdsController adsController, CommentController commentController, RestTemplate restTemplate) {
@@ -82,6 +82,11 @@ public class TestRestAdAndComment {
         getInfoAdPath = "http://localhost:" + port + "/ads/{id}";
         getSelfUserAllAdPath = "http://localhost:" + port + "/ads/me";
         updateImageAdPath = "http://localhost:" + port + "/ads/{id}/image";
+
+        updateAdDto = CreateOrUpdateAdDto.builder().
+                title("Тестовый заголовок").
+                description("Тестовое описание").
+                price(999).build();
     }
 
     @Test
@@ -95,26 +100,105 @@ public class TestRestAdAndComment {
     @Test
     @Order(2)
     void addAd() {
-        CreateOrUpdateAdDto updateAdDto =
-                CreateOrUpdateAdDto.builder().
-                        title("Тестовый заголовок").
-                        description("Тестовое описание").
-                        price(999).build();
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBasicAuth("user@gmail.com", "123123123");
+        HttpHeaders headers = getHeaderUser();
         headers.setContentType(MediaType.valueOf(MediaType.MULTIPART_FORM_DATA_VALUE));
+        MultiValueMap<String, Object> form = new LinkedMultiValueMap<>();
+        form.add("properties", updateAdDto);
+        form.add("image", getTestFile());
 
+        HttpEntity<MultiValueMap<String, Object>> requestEntityWithDto = new HttpEntity<>(form, headers);
+
+        ResponseEntity<AdDto> exchangeAddAd =                   // Добавляем объявление
+                restTemplate.exchange(
+                        addAdPath,
+                        HttpMethod.POST,
+                        requestEntityWithDto,
+                        AdDto.class);
+
+        assertThat(exchangeAddAd.getStatusCode()).isEqualTo(HttpStatus.OK);
+        Assertions.assertEquals(999, Objects.requireNonNull(exchangeAddAd.getBody()).getPrice());
+
+        int idForDeleteAd = exchangeAddAd.getBody().getPk();     // Заносим id для дальнейших операций
+
+        ResponseEntity<ExtendedAdDto> exchangeGetAdById =       // Находим объявление по id
+                restTemplate.exchange(
+                        getInfoAdPath,
+                        HttpMethod.GET,
+                        new HttpEntity<>(getHeaderUser()),
+                        ExtendedAdDto.class, idForDeleteAd);
+
+        assertThat(exchangeGetAdById.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertNotNull(Objects.requireNonNull(exchangeGetAdById.getBody()).getDescription());
+
+        ResponseEntity<AdDto> exchangeUpdateAdUser =                 // Хозяин обновляет объявление
+                restTemplate.exchange(
+                        updateAdPath,
+                        HttpMethod.PATCH,
+                        new HttpEntity<CreateOrUpdateAdDto>(updateAdDto,getHeaderUser()),
+                        AdDto.class, idForDeleteAd);
+        assertThat(exchangeUpdateAdUser.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertNotNull(Objects.requireNonNull(exchangeUpdateAdUser.getBody()).getTitle());
+
+
+
+        ResponseEntity<Void> exchangeDeleteAd =                 // удаляет обявление хозяин USER
+                restTemplate.exchange(
+                        deleteAdPath,
+                        HttpMethod.DELETE,
+                        new HttpEntity<>(getHeaderUser()),
+                        Void.class, idForDeleteAd);
+        assertThat(exchangeDeleteAd.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+        exchangeGetAdById =                                     // Пытаемся найти удаленное объявление
+                restTemplate.exchange(
+                        getInfoAdPath,
+                        HttpMethod.GET,
+                        getHttpWithAuthAndNotBody(),
+                        ExtendedAdDto.class, idForDeleteAd);
+        assertThat(exchangeGetAdById.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    /**
+     * Попытки другого пользователя удалить/редактировать/ чужие данные
+     *
+     */
+    @Test
+    void enemyUserTryChangeData(){
+        HttpHeaders headers = getHeaderUser();
+        headers.setContentType(MediaType.valueOf(MediaType.MULTIPART_FORM_DATA_VALUE));
         MultiValueMap<String, Object> form = new LinkedMultiValueMap<>();
         form.add("properties", updateAdDto);
         form.add("image", getTestFile());
 
         HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(form, headers);
 
-        ResponseEntity<AdDto> exchange = restTemplate.exchange(addAdPath, HttpMethod.POST, requestEntity, AdDto.class);
+        ResponseEntity<AdDto> exchangeAddAd =                   // Добавляем объявление от лица хозяина
+                restTemplate.exchange(
+                        addAdPath,
+                        HttpMethod.POST,
+                        requestEntity,
+                        AdDto.class);
 
-        assertThat(exchange.getStatusCode()).isEqualTo(HttpStatus.OK);
-        Assertions.assertEquals(999, Objects.requireNonNull(exchange.getBody()).getPrice());
+        assertThat(exchangeAddAd.getStatusCode()).isEqualTo(HttpStatus.OK);
+        Assertions.assertEquals(999, Objects.requireNonNull(exchangeAddAd.getBody()).getPrice());
+
+        int idAd = exchangeAddAd.getBody().getPk();
+
+        ResponseEntity<Void> exchangeDeleteAdEnemy =                 // Другой USER пытаеться удалить объявление
+                restTemplate.exchange(
+                        deleteAdPath,
+                        HttpMethod.DELETE,
+                        new HttpEntity<>(getHeaderEnemy()),
+                        Void.class, idAd);
+        assertThat(exchangeDeleteAdEnemy.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+
+        ResponseEntity<AdDto> exchangeUpdateAdEnemy =                 // Другой USER пытается обновить объявление
+                restTemplate.exchange(
+                        updateAdPath,
+                        HttpMethod.PATCH,
+                        new HttpEntity<CreateOrUpdateAdDto>(updateAdDto,getHeaderEnemy()),
+                        AdDto.class, idAd);
+        assertThat(exchangeUpdateAdEnemy.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
 
     }
 
@@ -126,66 +210,33 @@ public class TestRestAdAndComment {
         assertTrue(Objects.requireNonNull(exchange.getBody()).getCount() > 0);
     }
 
-    @Test
-    @Order(4)
-    void getInfoAboutAd() {
-        ResponseEntity<ExtendedAdDto> exchange =
-                restTemplate.exchange(
-                        getInfoAdPath,
-                        HttpMethod.GET,
-                        getHttpWithAuthAndNotBody(),
-                        ExtendedAdDto.class, 1);
+//    @Test
+//    @Order(4)
+//    void getInfoAboutAd() {
+//
+//    }
 
-        assertThat(exchange.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertNotNull(exchange.getBody().getDescription());
-    }
-
-    @Test
-    void removeAd() {
-        CreateOrUpdateAdDto updateAdDto =
-                CreateOrUpdateAdDto.builder().
-                        title("Тестовый заголовок").
-                        description("Тестовое описание").
-                        price(999).build();
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBasicAuth("user@gmail.com", "123123123");
-        headers.setContentType(MediaType.valueOf(MediaType.MULTIPART_FORM_DATA_VALUE));
-
-        MultiValueMap<String, Object> form = new LinkedMultiValueMap<>();
-        form.add("properties", updateAdDto);
-        form.add("image", getTestFile());
-
-        HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(form, headers);
-
-        ResponseEntity<AdDto> exchange = restTemplate.exchange(addAdPath, HttpMethod.POST, requestEntity, AdDto.class);
-
-        int idDeleted= exchange.getBody().getPk();
-
-
-        ResponseEntity<Void> exchange2 =
-                restTemplate.exchange(
-                        deleteAdPath,
-                        HttpMethod.DELETE,
-                        getHttpWithAuthAndNotBody(),
-                        Void.class, idDeleted);
-        assertThat(exchange2.getStatusCode()).isEqualTo(HttpStatus.OK);
-
-        ResponseEntity<ExtendedAdDto> exchange3 =
-                restTemplate.exchange(
-                        getInfoAdPath,
-                        HttpMethod.GET,
-                        getHttpWithAuthAndNotBody(),
-                        ExtendedAdDto.class, idDeleted);
-        assertThat(exchange3.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-    }
+//    @Test
+//    void removeAd() {
+//    }
 
     @Test
     void updateAds() {
     }
 
+    /**
+     * Находим все объявления авторизованного пользователя
+     */
     @Test
     void getAdsMe() {
+        ResponseEntity<AdsDto> exchangeSelfAllAds =
+                restTemplate.exchange(
+                        getSelfUserAllAdPath,
+                        HttpMethod.GET,
+                        new HttpEntity<>(getHeaderUser()),
+                        AdsDto.class);
+        assertTrue(Objects.requireNonNull(exchangeSelfAllAds.getBody()).getCount() > 0);
+
     }
 
     @Test
@@ -229,5 +280,29 @@ public class TestRestAdAndComment {
     private FileSystemResource getTestFile() {
         Path testFile = Paths.get("src/main/resources/image/test.jpg");
         return new FileSystemResource(testFile);
+    }
+
+    /**
+     * Череда из трех методов для возврата заголовков аутентификации пользователя
+     *
+     * @return
+     */
+    private HttpHeaders getHeaderUser() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBasicAuth("user@gmail.com", "123123123");
+        return headers;
+
+    }
+
+    private HttpHeaders getHeaderEnemy() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBasicAuth("enemy@gmail.com", "123123123");
+        return headers;
+    }
+
+    private HttpHeaders getHeaderAdmin() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBasicAuth("enemy@gmail.com", "123123123");
+        return headers;
     }
 }
