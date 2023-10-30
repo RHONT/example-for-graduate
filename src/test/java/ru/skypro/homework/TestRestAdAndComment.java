@@ -11,15 +11,11 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import ru.skypro.homework.controller.AdsController;
 import ru.skypro.homework.controller.CommentController;
-import ru.skypro.homework.dto.AdDto;
-import ru.skypro.homework.dto.AdsDto;
-import ru.skypro.homework.dto.CreateOrUpdateAdDto;
-import ru.skypro.homework.dto.ExtendedAdDto;
+import ru.skypro.homework.dto.*;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
-import java.util.List;
 import java.util.Objects;
 
 import static org.assertj.core.api.Assertions.*;
@@ -46,6 +42,8 @@ public class TestRestAdAndComment {
     @Autowired
     private TestRestTemplate restTemplate;
 
+    private AdCommentIdRepo idRepo = new AdCommentIdRepo();
+
     String addCommentPath;
     String deleteCommentPath;
     String updateCommentPath;
@@ -59,15 +57,7 @@ public class TestRestAdAndComment {
     String getSelfUserAllAdPath;
     String updateImageAdPath;
 
-    Integer testIdAd;
     CreateOrUpdateAdDto updateAdDto;
-
-
-//    public TestRestAdAndComment(AdsController adsController, CommentController commentController, RestTemplate restTemplate) {
-//        this.adsController = adsController;
-//        this.commentController = commentController;
-//        this.restTemplate = restTemplate;
-//    }
 
     @BeforeEach
     void initVariable() {
@@ -97,17 +87,12 @@ public class TestRestAdAndComment {
         assertThat(commentController).isNotNull();
     }
 
-
+    /**
+     * Действия пользователя над собственным контентом
+     */
     @Test
     @Order(2)
     void masterOfAdOperations() {
-        HttpHeaders headers = getHeaderUser();
-        headers.setContentType(MediaType.valueOf(MediaType.MULTIPART_FORM_DATA_VALUE));
-        MultiValueMap<String, Object> form = new LinkedMultiValueMap<>();
-        form.add("properties", updateAdDto);
-        form.add("image", getTestFile());
-        HttpEntity<MultiValueMap<String, Object>> requestEntityWithDto = new HttpEntity<>(form, headers);
-
         HttpHeaders headerForUpdateImage = getHeaderUser();
         headerForUpdateImage.setContentType(MediaType.valueOf(MediaType.MULTIPART_FORM_DATA_VALUE));
         MultiValueMap<String, Object> formForImage = new LinkedMultiValueMap<>();
@@ -115,17 +100,9 @@ public class TestRestAdAndComment {
         HttpEntity<MultiValueMap<String, Object>> requestEntityWithDto2 =
                 new HttpEntity<>(formForImage, headerForUpdateImage);
 
-        ResponseEntity<AdDto> exchangeAddAd =                   // Добавляем объявление
-                restTemplate.exchange(
-                        addAdPath,
-                        HttpMethod.POST,
-                        requestEntityWithDto,
-                        AdDto.class);
-
-        assertThat(exchangeAddAd.getStatusCode()).isEqualTo(HttpStatus.OK);
-        Assertions.assertEquals(999, Objects.requireNonNull(exchangeAddAd.getBody()).getPrice());
-
-        int idAd = exchangeAddAd.getBody().getPk();     // Заносим id для дальнейших операций
+        refreshDataUser();
+        int idAd = idRepo.getIdAd();
+        int idComment = idRepo.getIdComment();
 
         ResponseEntity<ExtendedAdDto> exchangeGetAdById =       // Находим объявление по id
                 restTemplate.exchange(
@@ -141,7 +118,7 @@ public class TestRestAdAndComment {
                 restTemplate.exchange(
                         updateAdPath,
                         HttpMethod.PATCH,
-                        new HttpEntity<CreateOrUpdateAdDto>(updateAdDto,getHeaderUser()),
+                        new HttpEntity<CreateOrUpdateAdDto>(updateAdDto, getHeaderUser()),
                         AdDto.class, idAd);
         assertThat(exchangeUpdateAdUser.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertNotNull(Objects.requireNonNull(exchangeUpdateAdUser.getBody()).getTitle());
@@ -173,17 +150,11 @@ public class TestRestAdAndComment {
     }
 
     /**
-     * Попытки другого пользователя удалить/редактировать/ чужие данные
-     *
+     * Действия пользователя над чужим контентом
+     * удалить/редактировать/
      */
     @Test
-    void enemyOfAdOperations(){
-        HttpHeaders headers = getHeaderUser();
-        headers.setContentType(MediaType.valueOf(MediaType.MULTIPART_FORM_DATA_VALUE));
-        MultiValueMap<String, Object> form = new LinkedMultiValueMap<>();
-        form.add("properties", updateAdDto);
-        form.add("image", getTestFile());
-        HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(form, headers);
+    void enemyOfAdOperations() {
 
         HttpHeaders headerForUpdateImage = getHeaderEnemy();
         headerForUpdateImage.setContentType(MediaType.valueOf(MediaType.MULTIPART_FORM_DATA_VALUE));
@@ -192,17 +163,9 @@ public class TestRestAdAndComment {
         HttpEntity<MultiValueMap<String, Object>> requestEntityWithDto2 =
                 new HttpEntity<>(formForImage, headerForUpdateImage);
 
-        ResponseEntity<AdDto> exchangeAddAd =                   // Добавляем объявление от лица хозяина
-                restTemplate.exchange(
-                        addAdPath,
-                        HttpMethod.POST,
-                        requestEntity,
-                        AdDto.class);
-
-        assertThat(exchangeAddAd.getStatusCode()).isEqualTo(HttpStatus.OK);
-        Assertions.assertEquals(999, Objects.requireNonNull(exchangeAddAd.getBody()).getPrice());
-
-        int idAd = exchangeAddAd.getBody().getPk();
+        refreshDataUser();
+        int idAd = idRepo.getIdAd();
+        int idComment = idRepo.getIdComment();
 
         ResponseEntity<Void> exchangeDeleteAdEnemy =                 // Другой USER пытаеться удалить объявление
                 restTemplate.exchange(
@@ -216,10 +179,10 @@ public class TestRestAdAndComment {
                 restTemplate.exchange(
                         updateAdPath,
                         HttpMethod.PATCH,
-                        new HttpEntity<CreateOrUpdateAdDto>(updateAdDto,getHeaderEnemy()),
+                        new HttpEntity<CreateOrUpdateAdDto>(updateAdDto, getHeaderEnemy()),
                         AdDto.class, idAd);
         assertThat(exchangeUpdateAdEnemy.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
-// todo Мы же картинку ищем, а у нее другой номер
+
         ResponseEntity<byte[]> exchangeUpdateImageAdEnemy =                 // Другой обновляет чужую картинку объявления
                 restTemplate.exchange(
                         updateImageAdPath,
@@ -237,22 +200,8 @@ public class TestRestAdAndComment {
         assertTrue(Objects.requireNonNull(exchange.getBody()).getCount() > 0);
     }
 
-//    @Test
-//    @Order(4)
-//    void getInfoAboutAd() {
-//
-//    }
-
-//    @Test
-//    void removeAd() {
-//    }
-
-    @Test
-    void updateAds() {
-    }
-
     /**
-     * Находим все объявления авторизованного пользователя
+     * Находим все объявления авторизованного пользователя user@gmail.com
      */
     @Test
     void getAdsMe() {
@@ -287,7 +236,7 @@ public class TestRestAdAndComment {
     }
 
     /**
-     * Возвращаем сущность http с авторизацией, имитация живого пользователя
+     * Возвращаем сущность http с авторизацией от user@gmail.com, имитация живого пользователя
      *
      * @return
      */
@@ -331,5 +280,44 @@ public class TestRestAdAndComment {
         HttpHeaders headers = new HttpHeaders();
         headers.setBasicAuth("enemy@gmail.com", "123123123");
         return headers;
+    }
+
+    /**
+     * idRepo - обертка для Map
+     * Метод создает от user@gmail.com одно объявление и один комментарий к нему
+     * Хранит в себе id объявления и комментария. Чтбы другие тесты могли всегда получать актульные id
+     */
+    private void refreshDataUser() {
+        if (idRepo.getIdAd() != null || idRepo.getIdComment() != null) {
+            idRepo.clear();
+        }
+
+        HttpHeaders headers = getHeaderUser();
+        headers.setContentType(MediaType.valueOf(MediaType.MULTIPART_FORM_DATA_VALUE));
+        MultiValueMap<String, Object> form = new LinkedMultiValueMap<>();
+        form.add("properties", updateAdDto);
+        form.add("image", getTestFile());
+        HttpEntity<MultiValueMap<String, Object>> requestEntityWithDto = new HttpEntity<>(form, headers);
+
+        ResponseEntity<AdDto> exchangeAddAd =
+                restTemplate.exchange(
+                        addAdPath,
+                        HttpMethod.POST,
+                        requestEntityWithDto,
+                        AdDto.class);
+        int idAd = exchangeAddAd.getBody().getPk();
+
+        CreateOrUpdateComment comment = new CreateOrUpdateComment();
+        comment.setText("Тестовый комментарий");
+        ResponseEntity<CommentDto> exchangeComment =
+                restTemplate.exchange(
+                        addCommentPath,
+                        HttpMethod.POST,
+                        new HttpEntity<>(comment, getHeaderUser()),
+                        CommentDto.class, idAd);
+        assertNotNull(Objects.requireNonNull(exchangeComment.getBody()).getAuthor());
+
+        idRepo.setIdAd(exchangeAddAd.getBody().getPk());
+        idRepo.setIdComment(exchangeComment.getBody().getPk());
     }
 }
