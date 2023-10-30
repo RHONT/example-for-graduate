@@ -44,9 +44,11 @@ public class TestRestTemplateUserAndAuthController {
 
     String registerPath;
     String loginPath;
+
     String setPasswordPath;
     String infoAboutUserPath;
     String uploadAvatarPath;
+
     LoginDto testLoginDto;
 
     @BeforeEach
