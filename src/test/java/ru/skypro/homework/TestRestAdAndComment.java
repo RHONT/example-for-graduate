@@ -219,14 +219,14 @@ public class TestRestAdAndComment {
                         new HttpEntity<CreateOrUpdateAdDto>(updateAdDto,getHeaderEnemy()),
                         AdDto.class, idAd);
         assertThat(exchangeUpdateAdEnemy.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
-
+// todo Мы же картинку ищем, а у нее другой номер
         ResponseEntity<byte[]> exchangeUpdateImageAdEnemy =                 // Другой обновляет чужую картинку объявления
                 restTemplate.exchange(
                         updateImageAdPath,
                         HttpMethod.PATCH,
                         requestEntityWithDto2,
                         byte[].class, idAd);
-        assertThat(exchangeUpdateAdEnemy.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+        assertThat(exchangeUpdateImageAdEnemy.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
     }
 
     @Test
