@@ -34,7 +34,6 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 public class TestRestAdAndComment {
     @LocalServerPort
     int port;
-
     @Autowired
     private AdsController adsController;
     @Autowired
@@ -42,7 +41,7 @@ public class TestRestAdAndComment {
     @Autowired
     private TestRestTemplate restTemplate;
 
-    private AdCommentIdRepo idRepo = new AdCommentIdRepo();
+    private final AdCommentIdRepo idRepo = new AdCommentIdRepo();
 
     String addCommentPath;
     String deleteCommentPath;
