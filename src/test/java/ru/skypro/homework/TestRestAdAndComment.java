@@ -19,6 +19,7 @@ import ru.skypro.homework.dto.ExtendedAdDto;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 import static org.assertj.core.api.Assertions.*;
@@ -99,14 +100,20 @@ public class TestRestAdAndComment {
 
     @Test
     @Order(2)
-    void addAd() {
+    void masterOfAdOperations() {
         HttpHeaders headers = getHeaderUser();
         headers.setContentType(MediaType.valueOf(MediaType.MULTIPART_FORM_DATA_VALUE));
         MultiValueMap<String, Object> form = new LinkedMultiValueMap<>();
         form.add("properties", updateAdDto);
         form.add("image", getTestFile());
-
         HttpEntity<MultiValueMap<String, Object>> requestEntityWithDto = new HttpEntity<>(form, headers);
+
+        HttpHeaders headerForUpdateImage = getHeaderUser();
+        headerForUpdateImage.setContentType(MediaType.valueOf(MediaType.MULTIPART_FORM_DATA_VALUE));
+        MultiValueMap<String, Object> formForImage = new LinkedMultiValueMap<>();
+        formForImage.add("image", getTestFile());
+        HttpEntity<MultiValueMap<String, Object>> requestEntityWithDto2 =
+                new HttpEntity<>(formForImage, headerForUpdateImage);
 
         ResponseEntity<AdDto> exchangeAddAd =                   // Добавляем объявление
                 restTemplate.exchange(
@@ -139,7 +146,14 @@ public class TestRestAdAndComment {
         assertThat(exchangeUpdateAdUser.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertNotNull(Objects.requireNonNull(exchangeUpdateAdUser.getBody()).getTitle());
 
-
+        ResponseEntity<byte[]> exchangeUpdateImageAdUser =                 // Хозяин обновляет картинку объявления
+                restTemplate.exchange(
+                        updateImageAdPath,
+                        HttpMethod.PATCH,
+                        requestEntityWithDto2,
+                        byte[].class, idForDeleteAd);
+        assertThat(exchangeUpdateImageAdUser.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertNotNull(Objects.requireNonNull(exchangeUpdateImageAdUser.getBody()));
 
         ResponseEntity<Void> exchangeDeleteAd =                 // удаляет обявление хозяин USER
                 restTemplate.exchange(
@@ -163,14 +177,20 @@ public class TestRestAdAndComment {
      *
      */
     @Test
-    void enemyUserTryChangeData(){
+    void enemyOfAdOperations(){
         HttpHeaders headers = getHeaderUser();
         headers.setContentType(MediaType.valueOf(MediaType.MULTIPART_FORM_DATA_VALUE));
         MultiValueMap<String, Object> form = new LinkedMultiValueMap<>();
         form.add("properties", updateAdDto);
         form.add("image", getTestFile());
-
         HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(form, headers);
+
+        HttpHeaders headerForUpdateImage = getHeaderEnemy();
+        headerForUpdateImage.setContentType(MediaType.valueOf(MediaType.MULTIPART_FORM_DATA_VALUE));
+        MultiValueMap<String, Object> formForImage = new LinkedMultiValueMap<>();
+        formForImage.add("image", getTestFile());
+        HttpEntity<MultiValueMap<String, Object>> requestEntityWithDto2 =
+                new HttpEntity<>(formForImage, headerForUpdateImage);
 
         ResponseEntity<AdDto> exchangeAddAd =                   // Добавляем объявление от лица хозяина
                 restTemplate.exchange(
@@ -200,6 +220,13 @@ public class TestRestAdAndComment {
                         AdDto.class, idAd);
         assertThat(exchangeUpdateAdEnemy.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
 
+        ResponseEntity<byte[]> exchangeUpdateImageAdEnemy =                 // Другой обновляет чужую картинку объявления
+                restTemplate.exchange(
+                        updateImageAdPath,
+                        HttpMethod.PATCH,
+                        requestEntityWithDto2,
+                        byte[].class, idAd);
+        assertThat(exchangeUpdateAdEnemy.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
     }
 
     @Test

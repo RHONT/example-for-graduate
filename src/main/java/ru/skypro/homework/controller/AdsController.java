@@ -77,7 +77,6 @@ public class AdsController {
     }
 
 
-
     @PatchMapping(path = "/{id}/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<byte[]> updateImageAd(@PathVariable(name = "id") Integer id,
                                                 @RequestParam("image") MultipartFile image,
