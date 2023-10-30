@@ -1,4 +1,4 @@
-package ru.skypro.homework;
+package ru.skypro.homework.resttemplates;
 
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +12,7 @@ import org.springframework.util.MultiValueMap;
 import ru.skypro.homework.controller.AdsController;
 import ru.skypro.homework.controller.CommentController;
 import ru.skypro.homework.dto.*;
+import ru.skypro.homework.supportclasses.AdCommentIdRepo;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;

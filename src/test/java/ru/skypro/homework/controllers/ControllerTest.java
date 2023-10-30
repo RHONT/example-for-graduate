@@ -1,4 +1,4 @@
-package ru.skypro.homework;
+package ru.skypro.homework.controllers;
 
 
 import org.junit.jupiter.api.*;

@@ -1,4 +1,4 @@
-package ru.skypro.homework;
+package ru.skypro.homework.resttemplates;
 
 
 import lombok.extern.slf4j.Slf4j;
