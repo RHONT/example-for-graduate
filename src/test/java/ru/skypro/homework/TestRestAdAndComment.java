@@ -125,14 +125,14 @@ public class TestRestAdAndComment {
         assertThat(exchangeAddAd.getStatusCode()).isEqualTo(HttpStatus.OK);
         Assertions.assertEquals(999, Objects.requireNonNull(exchangeAddAd.getBody()).getPrice());
 
-        int idForDeleteAd = exchangeAddAd.getBody().getPk();     // Заносим id для дальнейших операций
+        int idAd = exchangeAddAd.getBody().getPk();     // Заносим id для дальнейших операций
 
         ResponseEntity<ExtendedAdDto> exchangeGetAdById =       // Находим объявление по id
                 restTemplate.exchange(
                         getInfoAdPath,
                         HttpMethod.GET,
                         new HttpEntity<>(getHeaderUser()),
-                        ExtendedAdDto.class, idForDeleteAd);
+                        ExtendedAdDto.class, idAd);
 
         assertThat(exchangeGetAdById.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertNotNull(Objects.requireNonNull(exchangeGetAdById.getBody()).getDescription());
@@ -142,7 +142,7 @@ public class TestRestAdAndComment {
                         updateAdPath,
                         HttpMethod.PATCH,
                         new HttpEntity<CreateOrUpdateAdDto>(updateAdDto,getHeaderUser()),
-                        AdDto.class, idForDeleteAd);
+                        AdDto.class, idAd);
         assertThat(exchangeUpdateAdUser.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertNotNull(Objects.requireNonNull(exchangeUpdateAdUser.getBody()).getTitle());
 
@@ -151,7 +151,7 @@ public class TestRestAdAndComment {
                         updateImageAdPath,
                         HttpMethod.PATCH,
                         requestEntityWithDto2,
-                        byte[].class, idForDeleteAd);
+                        byte[].class, idAd);
         assertThat(exchangeUpdateImageAdUser.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertNotNull(Objects.requireNonNull(exchangeUpdateImageAdUser.getBody()));
 
@@ -160,7 +160,7 @@ public class TestRestAdAndComment {
                         deleteAdPath,
                         HttpMethod.DELETE,
                         new HttpEntity<>(getHeaderUser()),
-                        Void.class, idForDeleteAd);
+                        Void.class, idAd);
         assertThat(exchangeDeleteAd.getStatusCode()).isEqualTo(HttpStatus.OK);
 
         exchangeGetAdById =                                     // Пытаемся найти удаленное объявление
@@ -168,7 +168,7 @@ public class TestRestAdAndComment {
                         getInfoAdPath,
                         HttpMethod.GET,
                         getHttpWithAuthAndNotBody(),
-                        ExtendedAdDto.class, idForDeleteAd);
+                        ExtendedAdDto.class, idAd);
         assertThat(exchangeGetAdById.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
     }
 
