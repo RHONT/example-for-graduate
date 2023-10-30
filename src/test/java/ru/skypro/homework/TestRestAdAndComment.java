@@ -27,7 +27,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
  * Должны находиться в базе три тестовых пользователя
  * user@gmail.com - права USER
  * enemy@gmail.com- права USER
- * admin@gmail.com- права ADMIN
+ * admin@gmail.com- права ADMIN. (тесты пока не добавлены, ибо верую, что работет)
  */
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -58,6 +58,7 @@ public class TestRestAdAndComment {
     String updateImageAdPath;
 
     CreateOrUpdateAdDto updateAdDto;
+    CreateOrUpdateComment commentDto;
 
     @BeforeEach
     void initVariable() {
@@ -78,6 +79,9 @@ public class TestRestAdAndComment {
                 title("Тестовый заголовок").
                 description("Тестовое описание").
                 price(999).build();
+
+        commentDto = new CreateOrUpdateComment();
+        commentDto.setText("Тестовый комментарий");
     }
 
     @Test
@@ -86,12 +90,10 @@ public class TestRestAdAndComment {
         assertThat(adsController).isNotNull();
         assertThat(commentController).isNotNull();
     }
-
     /**
-     * Действия пользователя над собственным контентом
+     * Действия хозяина над собственным объявлением
      */
     @Test
-    @Order(2)
     void masterOfAdOperations() {
         HttpHeaders headerForUpdateImage = getHeaderUser();
         headerForUpdateImage.setContentType(MediaType.valueOf(MediaType.MULTIPART_FORM_DATA_VALUE));
@@ -102,60 +104,84 @@ public class TestRestAdAndComment {
 
         refreshDataUser();
         int idAd = idRepo.getIdAd();
-        int idComment = idRepo.getIdComment();
 
-        ResponseEntity<ExtendedAdDto> exchangeGetAdById =       // Находим объявление по id
+        ResponseEntity<ExtendedAdDto> exGetAdById =       // Находим объявление по id
                 restTemplate.exchange(
                         getInfoAdPath,
                         HttpMethod.GET,
                         new HttpEntity<>(getHeaderUser()),
                         ExtendedAdDto.class, idAd);
 
-        assertThat(exchangeGetAdById.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertNotNull(Objects.requireNonNull(exchangeGetAdById.getBody()).getDescription());
+        assertThat(exGetAdById.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertNotNull(Objects.requireNonNull(exGetAdById.getBody()).getDescription());
 
-        ResponseEntity<AdDto> exchangeUpdateAdUser =                 // Хозяин обновляет объявление
+        ResponseEntity<AdDto> exUpdateAdMaster =                 // Хозяин обновляет объявление
                 restTemplate.exchange(
                         updateAdPath,
                         HttpMethod.PATCH,
-                        new HttpEntity<CreateOrUpdateAdDto>(updateAdDto, getHeaderUser()),
+                        new HttpEntity<>(updateAdDto, getHeaderUser()),
                         AdDto.class, idAd);
-        assertThat(exchangeUpdateAdUser.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertNotNull(Objects.requireNonNull(exchangeUpdateAdUser.getBody()).getTitle());
+        assertThat(exUpdateAdMaster.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertNotNull(Objects.requireNonNull(exUpdateAdMaster.getBody()).getTitle());
 
-        ResponseEntity<byte[]> exchangeUpdateImageAdUser =                 // Хозяин обновляет картинку объявления
+        ResponseEntity<byte[]> exUpdateImageAdMaster =                 // Хозяин обновляет картинку объявления
                 restTemplate.exchange(
                         updateImageAdPath,
                         HttpMethod.PATCH,
                         requestEntityWithDto2,
                         byte[].class, idAd);
-        assertThat(exchangeUpdateImageAdUser.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertNotNull(Objects.requireNonNull(exchangeUpdateImageAdUser.getBody()));
+        assertThat(exUpdateImageAdMaster.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertNotNull(Objects.requireNonNull(exUpdateImageAdMaster.getBody()));
 
-        ResponseEntity<Void> exchangeDeleteAd =                 // удаляет обявление хозяин USER
+        ResponseEntity<Void> exDeleteAdMaster =                 // удаляет обявление хозяин USER
                 restTemplate.exchange(
                         deleteAdPath,
                         HttpMethod.DELETE,
                         new HttpEntity<>(getHeaderUser()),
                         Void.class, idAd);
-        assertThat(exchangeDeleteAd.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(exDeleteAdMaster.getStatusCode()).isEqualTo(HttpStatus.OK);
 
-        exchangeGetAdById =                                     // Пытаемся найти удаленное объявление
+        exGetAdById =                                     // Пытаемся найти удаленное объявление
                 restTemplate.exchange(
                         getInfoAdPath,
                         HttpMethod.GET,
                         getHttpWithAuthAndNotBody(),
                         ExtendedAdDto.class, idAd);
-        assertThat(exchangeGetAdById.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        assertThat(exGetAdById.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
 
     /**
-     * Действия пользователя над чужим контентом
+     * Хозяин комментарий совершает действия
+     */
+    @Test
+    void masterOfCommentOperations() {
+        refreshDataUser();
+        int idAd = idRepo.getIdAd();
+        int idComment = idRepo.getIdComment();
+
+        ResponseEntity<CommentDto> exUpdateCommentMaster =           // Хозяин обновляет свой комментарий
+                restTemplate.exchange(
+                        deleteCommentPath,
+                        HttpMethod.PATCH,
+                        new HttpEntity<>(commentDto, getHeaderUser()),
+                        CommentDto.class, idAd, idComment);
+        assertThat(exUpdateCommentMaster.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+        ResponseEntity<Void> exDeleteCommentMaster =                 //  Хозяин удаляет свой комментарий
+                restTemplate.exchange(
+                        deleteCommentPath,
+                        HttpMethod.DELETE,
+                        new HttpEntity<>(getHeaderUser()),
+                        Void.class, idAd, idComment);
+        assertThat(exDeleteCommentMaster.getStatusCode()).isEqualTo(HttpStatus.OK);
+    }
+
+    /**
+     * Действия пользователя над чужими объявлениями
      * удалить/редактировать/
      */
     @Test
     void enemyOfAdOperations() {
-
         HttpHeaders headerForUpdateImage = getHeaderEnemy();
         headerForUpdateImage.setContentType(MediaType.valueOf(MediaType.MULTIPART_FORM_DATA_VALUE));
         MultiValueMap<String, Object> formForImage = new LinkedMultiValueMap<>();
@@ -165,39 +191,86 @@ public class TestRestAdAndComment {
 
         refreshDataUser();
         int idAd = idRepo.getIdAd();
-        int idComment = idRepo.getIdComment();
 
-        ResponseEntity<Void> exchangeDeleteAdEnemy =                 // Другой USER пытаеться удалить объявление
+        ResponseEntity<Void> exDeleteAdEnemy =                 // Другой USER пытаеться удалить объявление
                 restTemplate.exchange(
                         deleteAdPath,
                         HttpMethod.DELETE,
                         new HttpEntity<>(getHeaderEnemy()),
                         Void.class, idAd);
-        assertThat(exchangeDeleteAdEnemy.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+        assertThat(exDeleteAdEnemy.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
 
-        ResponseEntity<AdDto> exchangeUpdateAdEnemy =                 // Другой USER пытается обновить объявление
+        ResponseEntity<AdDto> exUpdateAdEnemy =                 // Другой USER пытается обновить объявление
                 restTemplate.exchange(
                         updateAdPath,
                         HttpMethod.PATCH,
-                        new HttpEntity<CreateOrUpdateAdDto>(updateAdDto, getHeaderEnemy()),
+                        new HttpEntity<>(updateAdDto, getHeaderEnemy()),
                         AdDto.class, idAd);
-        assertThat(exchangeUpdateAdEnemy.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+        assertThat(exUpdateAdEnemy.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
 
-        ResponseEntity<byte[]> exchangeUpdateImageAdEnemy =                 // Другой обновляет чужую картинку объявления
+        ResponseEntity<byte[]> exUpdateImageAdEnemy =                 // Другой обновляет чужую картинку объявления
                 restTemplate.exchange(
                         updateImageAdPath,
                         HttpMethod.PATCH,
                         requestEntityWithDto2,
                         byte[].class, idAd);
-        assertThat(exchangeUpdateImageAdEnemy.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+        assertThat(exUpdateImageAdEnemy.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
     }
 
+    /**
+     * Операции враждебного пользователя над чужими комментариями
+     */
     @Test
-    @Order(3)
+    void enemyOfCommentOperations() {
+        refreshDataUser();
+        int idAd = idRepo.getIdAd();
+        int idComment = idRepo.getIdComment();
+
+        ResponseEntity<Void> exDeleteCommentEnemy =                 // Другой USER пытаеться удалить комментарий
+                restTemplate.exchange(
+                        deleteCommentPath,
+                        HttpMethod.DELETE,
+                        new HttpEntity<>(getHeaderEnemy()),
+                        Void.class, idAd, idComment);
+        assertThat(exDeleteCommentEnemy.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+
+        ResponseEntity<CommentDto> exUpdateCommentEnemy =                 // Другой USER пытается обновить комментарий
+                restTemplate.exchange(
+                        deleteCommentPath, HttpMethod.PATCH,
+                        new HttpEntity<>(commentDto, getHeaderEnemy()),
+                        CommentDto.class, idAd, idComment);
+        assertThat(exUpdateCommentEnemy.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+
+    }
+
+    /**
+     * Находим все обьявления по базе
+     */
+    @Test
     void getAllAds() {
-        ResponseEntity<AdsDto> exchange = restTemplate.exchange(getAllAdPath, HttpMethod.GET, getHttpWithAuthAndNotBody(), AdsDto.class);
+        ResponseEntity<AdsDto> exchange =
+                restTemplate.exchange(
+                        getAllAdPath,
+                        HttpMethod.GET,
+                        new HttpEntity<>(getHeaderUser()),
+                        AdsDto.class);
         assertThat(exchange.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertTrue(Objects.requireNonNull(exchange.getBody()).getCount() > 0);
+    }
+
+    /**
+     * Находим все комментарии по id объявления
+     */
+    @Test
+    void getComments() {
+        refreshDataUser();
+        int idAd = idRepo.getIdAd();
+        ResponseEntity<CommentsDto> exGetAllCommentsById = restTemplate.exchange(
+                getAllCommentByAdPath,
+                HttpMethod.GET,
+                new HttpEntity<>(getHeaderUser()),
+                CommentsDto.class, idAd);
+        assertTrue(Objects.requireNonNull(exGetAllCommentsById.getBody()).getCount() > 0);
     }
 
     /**
@@ -205,40 +278,16 @@ public class TestRestAdAndComment {
      */
     @Test
     void getAdsMe() {
-        ResponseEntity<AdsDto> exchangeSelfAllAds =
-                restTemplate.exchange(
-                        getSelfUserAllAdPath,
-                        HttpMethod.GET,
-                        new HttpEntity<>(getHeaderUser()),
-                        AdsDto.class);
+        ResponseEntity<AdsDto> exchangeSelfAllAds = restTemplate.exchange(
+                getSelfUserAllAdPath,
+                HttpMethod.GET,
+                new HttpEntity<>(getHeaderUser()),
+                AdsDto.class);
         assertTrue(Objects.requireNonNull(exchangeSelfAllAds.getBody()).getCount() > 0);
-
-    }
-
-    @Test
-    void updateImageAd() {
-    }
-
-    @Test
-    void getComments() {
-    }
-
-    @Test
-    void addComment() {
-    }
-
-    @Test
-    void deleteComment() {
-    }
-
-    @Test
-    void updateComment() {
     }
 
     /**
-     * Возвращаем сущность http с авторизацией от user@gmail.com, имитация живого пользователя
-     *
-     * @return
+     * Возвращаем сущность http с авторизацией от user@gmail.com
      */
     private HttpEntity<?> getHttpWithAuthAndNotBody() {
         HttpHeaders headers = new HttpHeaders();
@@ -250,8 +299,6 @@ public class TestRestAdAndComment {
 
     /**
      * Из файла делаем экземпляр FileSystemResource, ибо обычный файл не запихнуть в клиентский запрос
-     *
-     * @return
      */
     private FileSystemResource getTestFile() {
         Path testFile = Paths.get("src/main/resources/image/test.jpg");
@@ -259,29 +306,30 @@ public class TestRestAdAndComment {
     }
 
     /**
-     * Череда из трех методов для возврата заголовков аутентификации пользователя
-     *
-     * @return
+     * Возвращает заголовок пользователя
      */
     private HttpHeaders getHeaderUser() {
         HttpHeaders headers = new HttpHeaders();
         headers.setBasicAuth("user@gmail.com", "123123123");
         return headers;
-
     }
 
+    /**
+     * Возвращает заголовок пользователя "враждебного"
+     */
     private HttpHeaders getHeaderEnemy() {
         HttpHeaders headers = new HttpHeaders();
         headers.setBasicAuth("enemy@gmail.com", "123123123");
         return headers;
     }
-
+    /**
+     * Возвращает заголовок пользователя админа
+     */
     private HttpHeaders getHeaderAdmin() {
         HttpHeaders headers = new HttpHeaders();
         headers.setBasicAuth("enemy@gmail.com", "123123123");
         return headers;
     }
-
     /**
      * idRepo - обертка для Map
      * Метод создает от user@gmail.com одно объявление и один комментарий к нему
@@ -291,33 +339,22 @@ public class TestRestAdAndComment {
         if (idRepo.getIdAd() != null || idRepo.getIdComment() != null) {
             idRepo.clear();
         }
-
         HttpHeaders headers = getHeaderUser();
         headers.setContentType(MediaType.valueOf(MediaType.MULTIPART_FORM_DATA_VALUE));
         MultiValueMap<String, Object> form = new LinkedMultiValueMap<>();
         form.add("properties", updateAdDto);
         form.add("image", getTestFile());
-        HttpEntity<MultiValueMap<String, Object>> requestEntityWithDto = new HttpEntity<>(form, headers);
+        HttpEntity<MultiValueMap<String, Object>> requestWithDto = new HttpEntity<>(form, headers);
 
-        ResponseEntity<AdDto> exchangeAddAd =
-                restTemplate.exchange(
-                        addAdPath,
-                        HttpMethod.POST,
-                        requestEntityWithDto,
-                        AdDto.class);
-        int idAd = exchangeAddAd.getBody().getPk();
+        ResponseEntity<AdDto> exAddAd =
+                restTemplate.exchange(addAdPath, HttpMethod.POST, requestWithDto, AdDto.class);
+        int idAd = exAddAd.getBody().getPk();
 
-        CreateOrUpdateComment comment = new CreateOrUpdateComment();
-        comment.setText("Тестовый комментарий");
-        ResponseEntity<CommentDto> exchangeComment =
-                restTemplate.exchange(
-                        addCommentPath,
-                        HttpMethod.POST,
-                        new HttpEntity<>(comment, getHeaderUser()),
-                        CommentDto.class, idAd);
-        assertNotNull(Objects.requireNonNull(exchangeComment.getBody()).getAuthor());
+        ResponseEntity<CommentDto> exComment = restTemplate.exchange(addCommentPath, HttpMethod.POST,
+                new HttpEntity<>(commentDto, getHeaderUser()), CommentDto.class, idAd);
+        assertNotNull(Objects.requireNonNull(exComment.getBody()).getAuthor());
 
-        idRepo.setIdAd(exchangeAddAd.getBody().getPk());
-        idRepo.setIdComment(exchangeComment.getBody().getPk());
+        idRepo.setIdAd(exAddAd.getBody().getPk());
+        idRepo.setIdComment(exComment.getBody().getPk());
     }
 }
