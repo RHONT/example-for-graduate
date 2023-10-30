@@ -38,34 +38,18 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class ControllerTest {
-
     @LocalServerPort
     private int port;
-
-    @Autowired
-    private WebSecurityConfig webSecurityConfig;
-
     @Autowired
     private TestRestTemplate restTemplate;
-
     @Autowired
     private UsersRepository usersRepository;
-
-    @Autowired
-    private RoleRepository roleRepository;
-
     @Autowired
     private CommentsRepository commentsRepository;
-
-    @Autowired
-    private ImageRepository imageRepository;
-
     @Autowired
     private UserController userController;
-
     @Autowired
     private AuthController authController;
-
     @Autowired
     AdsController adsController;
 
@@ -87,11 +71,10 @@ public class ControllerTest {
     String startPath;
 
     UserDetails activeUser;
-    private final String userNameUser = "user@gmail.com";
     UserDetails activeAdmin;
-    private final String adminNameUser = "admin@gmail.com";
     UserDetails activeEnemy;
-    private final String enemyNameUser = "enemy@gmail.com";
+
+    private final String userNameUser = "user@gmail.com";
 
     RegisterDto registerDto;
 
@@ -99,6 +82,8 @@ public class ControllerTest {
     @Transactional
     @Rollback(value = false)
     void init() {
+        String adminNameUser = "admin@gmail.com";
+        String enemyNameUser = "enemy@gmail.com";
         if (!usersRepository.existsByUsername(userNameUser) &&
                 !usersRepository.existsByUsername(adminNameUser) &&
                 !usersRepository.existsByUsername(enemyNameUser)) {
