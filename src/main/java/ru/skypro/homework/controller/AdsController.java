@@ -82,7 +82,7 @@ public class AdsController {
                                                 @RequestParam("image") MultipartFile image,
                                                 @AuthenticationPrincipal UserDetails userDetails) throws IOException {
         log.info("Activated updateImage method.");
-        byte[] dataForResponse = imageService.updateImageAdEntity(id, image,userDetails).getData();
+        byte[] dataForResponse = imageService.updateImageAd(id, image,userDetails).getData();
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_OCTET_STREAM).body(dataForResponse);
     }
 

@@ -169,7 +169,7 @@ public class TestRestAdAndComment {
                         HttpMethod.GET,
                         getHttpWithAuthAndNotBody(),
                         ExtendedAdDto.class, idAd);
-        assertThat(exchangeGetAdById.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(exchangeGetAdById.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
 
     /**
