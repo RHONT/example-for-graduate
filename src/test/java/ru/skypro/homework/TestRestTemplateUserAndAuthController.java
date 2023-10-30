@@ -11,15 +11,11 @@ import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.*;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.multipart.MultipartFile;
 import ru.skypro.homework.controller.UserController;
 import ru.skypro.homework.dto.*;
 import ru.skypro.homework.repository.UsersRepository;
-import ru.skypro.homework.utilclass.JavaFileToMultipartFile;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
@@ -171,6 +167,10 @@ public class TestRestTemplateUserAndAuthController {
         return httpEntity;
     }
 
+    /**
+     * Возвращаем сущность http без авторизации, нужно для имитации ошибки 401
+     * @return
+     */
     private HttpEntity<?>  getHttpEmpty(){
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -178,6 +178,10 @@ public class TestRestTemplateUserAndAuthController {
         return new HttpEntity<>(headers);
     }
 
+    /**
+     * Возвращаем сущность http с авторизацией, имитация живого пользователя
+     * @return
+     */
     private HttpEntity<?>  getHttpWithAuthAndNotBody(){
         HttpHeaders headers = new HttpHeaders();
         headers.setBasicAuth("enemy@gmail.com", "123123123");
@@ -186,6 +190,10 @@ public class TestRestTemplateUserAndAuthController {
         return new HttpEntity<>(headers);
     }
 
+    /**
+     * Из файла делаем экземпляр FileSystemResource, ибо обычный файл не запихнуть в клиентский запрос
+     * @return
+     */
     private FileSystemResource getTestFile() {
         Path testFile = Paths.get("src/main/resources/image/test.jpg");
         return new FileSystemResource(testFile);
