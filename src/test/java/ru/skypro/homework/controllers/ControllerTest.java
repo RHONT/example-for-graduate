@@ -157,9 +157,6 @@ public class ControllerTest {
 
     @Test
     void infoAboutAuthUser() {
-        LoginDto loginDto = LoginDto.builder().username(userNameUser).password("123123123").build();
-        authController.login(loginDto);
-        activeUser = customUserDetailsService.loadUserByUsername(userNameUser);
         UserDto userDto = userController.infoAboutAuthUser(activeUser);
         assertEquals(userDto.getFirstName(), "Евгений");
     }
@@ -314,8 +311,6 @@ public class ControllerTest {
         assertThrows(UnauthorizedException.class,()->{
             commentController.updateComment(numbAd, numbComment, commentDto, activeEnemy);
         });
-
-//        CommentDto commentDto = restTemplate.patchForObject(startPath + "/ads/{idAdd}/comments/{idComment}", commentAdminDto,CommentDto.class,"1","1");
     }
 
 
