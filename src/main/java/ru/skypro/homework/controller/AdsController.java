@@ -56,6 +56,7 @@ public class AdsController {
     @ResponseStatus(HttpStatus.OK)
     @DeleteMapping(path = "{id}")
     public void removeAd(@PathVariable Integer id, @AuthenticationPrincipal UserDetails userDetails) {
+
         adService.deleteAdEntity(id, userDetails);
     }
 

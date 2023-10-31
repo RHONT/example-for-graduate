@@ -28,7 +28,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
  * Должны находиться в базе три тестовых пользователя
  * user@gmail.com - права USER
  * enemy@gmail.com- права USER
- * admin@gmail.com- права ADMIN. (тесты пока не добавлены, ибо верую, что работает)
+ * admin@gmail.com- права ADMIN.
  */
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -99,7 +99,7 @@ public class TestRestAdAndComment {
         headerForUpdateImage.setContentType(MediaType.valueOf(MediaType.MULTIPART_FORM_DATA_VALUE));
         MultiValueMap<String, Object> formForImage = new LinkedMultiValueMap<>();
         formForImage.add("image", getTestFile());
-        HttpEntity<MultiValueMap<String, Object>> requestEntityWithDto2 =
+        HttpEntity<MultiValueMap<String, Object>> requestEntityWithImage =
                 new HttpEntity<>(formForImage, headerForUpdateImage);
 
         refreshDataUser();
@@ -128,7 +128,7 @@ public class TestRestAdAndComment {
                 restTemplate.exchange(
                         updateImageAdPath,
                         HttpMethod.PATCH,
-                        requestEntityWithDto2,
+                        requestEntityWithImage,
                         byte[].class, idAd);
         assertThat(exUpdateImageAdMaster.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertNotNull(Objects.requireNonNull(exUpdateImageAdMaster.getBody()));
@@ -145,7 +145,7 @@ public class TestRestAdAndComment {
                 restTemplate.exchange(
                         getInfoAdPath,
                         HttpMethod.GET,
-                        getHttpWithAuthAndNotBody(),
+                        new HttpEntity<>(getHeaderUser()),
                         ExtendedAdDto.class, idAd);
         assertThat(exGetAdById.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
@@ -186,13 +186,13 @@ public class TestRestAdAndComment {
         headerForUpdateImage.setContentType(MediaType.valueOf(MediaType.MULTIPART_FORM_DATA_VALUE));
         MultiValueMap<String, Object> formForImage = new LinkedMultiValueMap<>();
         formForImage.add("image", getTestFile());
-        HttpEntity<MultiValueMap<String, Object>> requestEntityWithDto2 =
+        HttpEntity<MultiValueMap<String, Object>> requestEntityWithImage =
                 new HttpEntity<>(formForImage, headerForUpdateImage);
 
         refreshDataUser();
         int idAd = idRepo.getIdAd();
 
-        ResponseEntity<Void> exDeleteAdEnemy =                 // Другой USER пытаеться удалить объявление
+        ResponseEntity<Void> exDeleteAdEnemy =                 // Другой USER пытается удалить объявление
                 restTemplate.exchange(
                         deleteAdPath,
                         HttpMethod.DELETE,
@@ -212,7 +212,7 @@ public class TestRestAdAndComment {
                 restTemplate.exchange(
                         updateImageAdPath,
                         HttpMethod.PATCH,
-                        requestEntityWithDto2,
+                        requestEntityWithImage,
                         byte[].class, idAd);
         assertThat(exUpdateImageAdEnemy.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
     }
@@ -244,15 +244,99 @@ public class TestRestAdAndComment {
     }
 
     /**
-     * Находим все обьявления по базе
+     * Админ совршает действие над пользовательскими данными
+     */
+    @Test
+    void adminOfAdOperations() {
+        HttpHeaders headerForUpdateImage = getHeaderAdmin();
+        headerForUpdateImage.setContentType(MediaType.valueOf(MediaType.MULTIPART_FORM_DATA_VALUE));
+        MultiValueMap<String, Object> formForImage = new LinkedMultiValueMap<>();
+        formForImage.add("image", getTestFile());
+        HttpEntity<MultiValueMap<String, Object>> requestEntityWithImage =
+                new HttpEntity<>(formForImage, headerForUpdateImage);
+
+        refreshDataUser();
+        int idAd = idRepo.getIdAd();
+
+        ResponseEntity<ExtendedAdDto> exGetAdById =       // Админ находит объявление по id
+                restTemplate.exchange(
+                        getInfoAdPath,
+                        HttpMethod.GET,
+                        new HttpEntity<>(getHeaderAdmin()),
+                        ExtendedAdDto.class, idAd);
+
+        assertThat(exGetAdById.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertNotNull(Objects.requireNonNull(exGetAdById.getBody()).getDescription());
+
+        ResponseEntity<AdDto> exUpdateAdAdmin =                 // админ обновляет объявление
+                restTemplate.exchange(
+                        updateAdPath,
+                        HttpMethod.PATCH,
+                        new HttpEntity<>(updateAdDto, getHeaderAdmin()),
+                        AdDto.class, idAd);
+        assertThat(exUpdateAdAdmin.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertNotNull(Objects.requireNonNull(exUpdateAdAdmin.getBody()).getTitle());
+
+        ResponseEntity<byte[]> exUpdateImageAdAdmin =                 // админ обновляет картинку объявления
+                restTemplate.exchange(
+                        updateImageAdPath,
+                        HttpMethod.PATCH,
+                        requestEntityWithImage,
+                        byte[].class, idAd);
+        assertThat(exUpdateImageAdAdmin.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertNotNull(Objects.requireNonNull(exUpdateImageAdAdmin.getBody()));
+
+        ResponseEntity<Void> exDeleteAdAdmin =                 // админ удаляет объявление
+                restTemplate.exchange(
+                        deleteAdPath,
+                        HttpMethod.DELETE,
+                        new HttpEntity<>(getHeaderAdmin()),
+                        Void.class, idAd);
+        assertThat(exDeleteAdAdmin.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+        exGetAdById =                                     // админ пытается найти удаленное объявление
+                restTemplate.exchange(
+                        getInfoAdPath,
+                        HttpMethod.GET,
+                        new HttpEntity<>(getHeaderAdmin()),
+                        ExtendedAdDto.class, idAd);
+        assertThat(exGetAdById.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+    }
+
+    /**
+     * админ  совершает действия над комментарием пользователя
+     */
+    @Test
+    void adminOfCommentOperations() {
+        refreshDataUser();
+        int idAd = idRepo.getIdAd();
+        int idComment = idRepo.getIdComment();
+
+        ResponseEntity<CommentDto> exUpdateCommentAdmin =           // админ обновляет комментарий пользователя
+                restTemplate.exchange(
+                        deleteCommentPath,
+                        HttpMethod.PATCH,
+                        new HttpEntity<>(commentDto, getHeaderAdmin()),
+                        CommentDto.class, idAd, idComment);
+        assertThat(exUpdateCommentAdmin.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+        ResponseEntity<Void> exDeleteCommentAdmin =                 //  админ удаляет комментарий
+                restTemplate.exchange(
+                        deleteCommentPath,
+                        HttpMethod.DELETE,
+                        new HttpEntity<>(getHeaderAdmin()),
+                        Void.class, idAd, idComment);
+        assertThat(exDeleteCommentAdmin.getStatusCode()).isEqualTo(HttpStatus.OK);
+    }
+
+    /**
+     * Находим все обьявления по базе без авторизации
      */
     @Test
     void getAllAds() {
         ResponseEntity<AdsDto> exchange =
-                restTemplate.exchange(
+                restTemplate.getForEntity(
                         getAllAdPath,
-                        HttpMethod.GET,
-                        new HttpEntity<>(getHeaderUser()),
                         AdsDto.class);
         assertThat(exchange.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertTrue(Objects.requireNonNull(exchange.getBody()).getCount() > 0);
@@ -327,7 +411,7 @@ public class TestRestAdAndComment {
      */
     private HttpHeaders getHeaderAdmin() {
         HttpHeaders headers = new HttpHeaders();
-        headers.setBasicAuth("enemy@gmail.com", "123123123");
+        headers.setBasicAuth("admin@gmail.com", "123123123");
         return headers;
     }
     /**
