@@ -1,6 +1,6 @@
 package ru.skypro.homework.dto;
 
-public interface LoginDtoInterface {
+public interface LoginDtoFromDB {
     String getUsername();
     String getPassword();
 }

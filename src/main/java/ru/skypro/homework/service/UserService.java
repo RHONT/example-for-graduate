@@ -15,8 +15,11 @@ import ru.skypro.homework.dto.UserDto;
 import ru.skypro.homework.entities.ImageEntity;
 import ru.skypro.homework.entities.UserEntity;
 import ru.skypro.homework.mappers.UserMapper;
+import ru.skypro.homework.repository.ImageRepository;
 import ru.skypro.homework.repository.UsersRepository;
+import ru.skypro.homework.utilclass.JavaFileToMultipartFile;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Optional;
 
@@ -28,15 +31,21 @@ public class UserService {
     private final UserMapper userMapper;
     private final ImageService imageService;
     private final PasswordEncoder passwordEncoder;
+    private final ImageRepository imageRepository;
 
     @Transactional
     public void uploadAvatar(MultipartFile file, UserDetails userDetails) throws IOException {
         log.info("method uploadAvatar is run");
 
+        if (file==null) {
+            file=  new JavaFileToMultipartFile(new File("src/main/resources/image/test.jpg"));
+        }
         UserEntity userEntity = usersRepository.findByUsername(userDetails.getUsername()).get();
         ImageEntity image = imageService.createImageEntity(file);
         userEntity.setImageEntity(image);
         usersRepository.save(userEntity);
+        image.setFilePath(image.getFilePath() + userEntity.getImageEntity().getId().toString());
+        imageRepository.save(image);
     }
 
     @Transactional
@@ -48,12 +57,13 @@ public class UserService {
 
     }
 
-
+    @Transactional
     public UserDto getInfoAboutUser(UserDetails userDetails) {
         UserEntity user = usersRepository.findByUsername(userDetails.getUsername()).get();
         return userMapper.userEntityToUserDto(user);
     }
 
+    @Transactional
     public SetPasswordDto setPassword(SetPasswordDto setPasswordDto, UserDetails userDetails) {
         Optional<UserEntity> user = usersRepository.findByUsername(userDetails.getUsername());
         setPasswordDto.setCurrentPassword(userDetails.getPassword());

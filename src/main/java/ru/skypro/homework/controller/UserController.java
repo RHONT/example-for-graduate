@@ -6,8 +6,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.annotation.Secured;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
@@ -15,12 +13,9 @@ import org.springframework.web.multipart.MultipartFile;
 import ru.skypro.homework.dto.*;
 import ru.skypro.homework.entities.ImageEntity;
 import ru.skypro.homework.repository.ImageRepository;
-import ru.skypro.homework.repository.UsersRepository;
 import ru.skypro.homework.service.UserService;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.Optional;
 
 @Slf4j
 @RestController
@@ -55,12 +50,17 @@ public class UserController {
 
     @ResponseStatus(HttpStatus.OK)
     @PatchMapping(path = "me/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public void updateUserDto(@RequestParam MultipartFile avatarUser,
-                              @AuthenticationPrincipal UserDetails userDetails) throws IOException {
+    public void uploadAvatarUser(@RequestParam(name = "image") MultipartFile avatarUser,
+                                 @AuthenticationPrincipal UserDetails userDetails) throws IOException {
         log.info("User {} update avatar", "Id user");
         userService.uploadAvatar(avatarUser, userDetails);
     }
 
+    /**
+     * Точка доступа для картинок
+     * @param idImage
+     * @return
+     */
     @GetMapping(path = "id-image/{idImage}")
     public ResponseEntity<byte[]> getAvatarFromDb(@PathVariable Integer idImage) {
         ImageEntity image = imageRepository.findById(idImage).get();

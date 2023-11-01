@@ -56,6 +56,7 @@ public class AdsController {
     @ResponseStatus(HttpStatus.OK)
     @DeleteMapping(path = "{id}")
     public void removeAd(@PathVariable Integer id, @AuthenticationPrincipal UserDetails userDetails) {
+
         adService.deleteAdEntity(id, userDetails);
     }
 
@@ -77,13 +78,12 @@ public class AdsController {
     }
 
 
-
     @PatchMapping(path = "/{id}/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<byte[]> updateImageAd(@PathVariable(name = "id") Integer id,
                                                 @RequestParam("image") MultipartFile image,
                                                 @AuthenticationPrincipal UserDetails userDetails) throws IOException {
         log.info("Activated updateImage method.");
-        byte[] dataForResponse = imageService.updateImageAdEntity(id, image,userDetails).getData();
+        byte[] dataForResponse = imageService.updateImageAd(id, image,userDetails).getData();
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_OCTET_STREAM).body(dataForResponse);
     }
 

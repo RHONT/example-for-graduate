@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import ru.skypro.homework.entities.AdEntity;
 import ru.skypro.homework.entities.ImageEntity;
-import ru.skypro.homework.exceptions.ImageNotFoundException;
+import ru.skypro.homework.exceptions.NoAdException;
 import ru.skypro.homework.exceptions.UnauthorizedException;
 import ru.skypro.homework.mappers.ImageMapper;
 import ru.skypro.homework.repository.AdsRepository;
@@ -32,37 +32,48 @@ public class ImageService {
      * Сохраняем картинку в базу. Двойное сохранение требуется для установления пути.
      * Так как оно привзяано к id картинки
      * Example: "id-image/5"
+     *
      * @param file
      * @return
      * @throws IOException
      */
     public ImageEntity createImageEntity(MultipartFile file) throws IOException {
+
         ImageEntity image = new ImageEntity();
-        imageMapper.updateImageEntityFromFile(file,image);
+        imageMapper.updateImageEntityFromFile(file, image);
         image.setFilePath(source);
         return image;
     }
 
     //todo Возможны ли ситуации, когда мы можем создать объявление без картинки?
+
     /**
      * Обновляем уже существующую картинку
-     * @param id картинки
+     *
+     * @param id   картинки
      * @param file на обновление
      * @return
      */
-    public ImageEntity updateImageAdEntity(Integer id, MultipartFile file, UserDetails userDetails) throws IOException {
-        Optional<ImageEntity> image = imageRepository.findById(id);
-        if (image.isPresent()) {
-            AdEntity ad=adsRepository.findByImageEntity(image.get()).get();
-            checkAuthority(userDetails,ad);
-            imageMapper.updateImageEntityFromFile(file, image.get());
-            imageRepository.save(image.get());
-            return image.get();
+    public ImageEntity updateImageAd(Integer id, MultipartFile file, UserDetails userDetails) throws IOException {
+        Optional<AdEntity> ad = adsRepository.findById(id);
+        if (ad.isPresent()) {
+            checkAuthority(userDetails, ad.get());
+           Optional<ImageEntity>  image=Optional.ofNullable(ad.get().getImageEntity());
+
+            if (image.isPresent()) {
+                imageMapper.updateImageEntityFromFile(file, image.get());
+                imageRepository.save(image.get());
+                return image.get();
+            } else {
+                ImageEntity newImage=new ImageEntity();
+                imageMapper.updateImageEntityFromFile(file, newImage);
+                ad.get().setImageEntity(newImage);
+                adsRepository.save(ad.get());
+                return newImage;
+            }
         }
-         else {
-            log.debug("Image with id {}, not found", id);
-            throw new ImageNotFoundException("Image for ad with id" + id + " not found");
-        }
+        log.debug("Ad with id {}, not found", id);
+      throw new NoAdException("Ad with id =" + id + "not found");
     }
 
     /**
@@ -74,6 +85,7 @@ public class ImageService {
 
     /**
      * Если авторизованный пользователь админ, то он имеет доступ на корректировку любого комментария
+     *
      * @param userDetails
      * @return
      */
@@ -84,6 +96,7 @@ public class ImageService {
     /**
      * Аккумулированный метод использующий userIsAdmin() и itISUserComment(), и если все плохо кидаем
      * исключение и пишем в лог событие
+     *
      * @param userDetails
      * @param ad
      */
@@ -93,7 +106,6 @@ public class ImageService {
             throw new UnauthorizedException("Attempted unauthorized access");
         }
     }
-
 
 
 }

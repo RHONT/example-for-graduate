@@ -22,13 +22,13 @@ public interface UsersRepository extends JpaRepository<UserEntity, Integer> {
     @Query(value = "SELECT username, password \n" +
             "from users u\n" +
             "where username=?",nativeQuery = true)
-    Optional<LoginDtoInterface> findLoginAndPasswordByUserName(String username);
+    Optional<LoginDtoFromDB> findLoginAndPasswordByUserName(String username);
 
     @Query(value = "SELECT r.name\n" +
             "from users as u\n" +
             "         join public.user_roles ur on u.id = ur.user_id\n" +
             "         join public.roles r on r.id = ur.role_id\n" +
             "where username=?",nativeQuery = true)
-    List<RolesDtoInterface> findRolesByUserName(String username);
+    List<RolesDtoFromDB> findRolesByUserName(String username);
 
 }

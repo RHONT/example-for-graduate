@@ -14,6 +14,7 @@ import ru.skypro.homework.dto.CreateOrUpdateComment;
 import ru.skypro.homework.entities.AdEntity;
 import ru.skypro.homework.entities.CommentEntity;
 import ru.skypro.homework.exceptions.NoAdException;
+import ru.skypro.homework.exceptions.NoCommentException;
 import ru.skypro.homework.exceptions.UnauthorizedException;
 import ru.skypro.homework.mappers.CommentsMapper;
 import ru.skypro.homework.repository.AdsRepository;
@@ -67,7 +68,7 @@ public class CommentService {
             commentsRepository.deleteByCommentIdAndAdEntity_Pk(commentId, adId);
         } else {
             log.debug("Comment with id={} not found", commentId);
-            throw new NoAdException("Comment with id = " + commentId + "not found");
+            throw new NoCommentException("Comment with id = " + commentId + "not found");
         }
     }
 
@@ -87,7 +88,7 @@ public class CommentService {
             commentsRepository.save(commentEntity.get());
         } else {
             log.debug("Comment with id={} not found", commentId);
-            throw new NoAdException("Comment with id = " + commentId + "not found");
+            throw new NoCommentException("Comment with id = " + commentId + "not found");
         }
         return commentsMapper.commentEntityToCommentDto(commentEntity.get());
     }

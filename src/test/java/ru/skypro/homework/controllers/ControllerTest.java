@@ -1,4 +1,4 @@
-package ru.skypro.homework;
+package ru.skypro.homework.controllers;
 
 
 import org.junit.jupiter.api.*;
@@ -9,6 +9,7 @@ import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 import ru.skypro.homework.config.WebSecurityConfig;
@@ -34,38 +35,22 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-
+//@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS) // подробнее изучить.
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class ControllerTest {
-
     @LocalServerPort
     private int port;
-
-    @Autowired
-    private WebSecurityConfig webSecurityConfig;
-
     @Autowired
     private TestRestTemplate restTemplate;
-
     @Autowired
     private UsersRepository usersRepository;
-
-    @Autowired
-    private RoleRepository roleRepository;
-
     @Autowired
     private CommentsRepository commentsRepository;
-
-    @Autowired
-    private ImageRepository imageRepository;
-
     @Autowired
     private UserController userController;
-
     @Autowired
     private AuthController authController;
-
     @Autowired
     AdsController adsController;
 
@@ -87,11 +72,10 @@ public class ControllerTest {
     String startPath;
 
     UserDetails activeUser;
-    private final String userNameUser = "user@gmail.com";
     UserDetails activeAdmin;
-    private final String adminNameUser = "admin@gmail.com";
     UserDetails activeEnemy;
-    private final String enemyNameUser = "enemy@gmail.com";
+
+    private final String userNameUser = "user@gmail.com";
 
     RegisterDto registerDto;
 
@@ -99,6 +83,8 @@ public class ControllerTest {
     @Transactional
     @Rollback(value = false)
     void init() {
+        String adminNameUser = "admin@gmail.com";
+        String enemyNameUser = "enemy@gmail.com";
         if (!usersRepository.existsByUsername(userNameUser) &&
                 !usersRepository.existsByUsername(adminNameUser) &&
                 !usersRepository.existsByUsername(enemyNameUser)) {
@@ -171,9 +157,6 @@ public class ControllerTest {
 
     @Test
     void infoAboutAuthUser() {
-        LoginDto loginDto = LoginDto.builder().username(userNameUser).password("123123123").build();
-        authController.login(loginDto);
-        activeUser = customUserDetailsService.loadUserByUsername(userNameUser);
         UserDto userDto = userController.infoAboutAuthUser(activeUser);
         assertEquals(userDto.getFirstName(), "Евгений");
     }
@@ -206,7 +189,8 @@ public class ControllerTest {
                 price(testPrice).
                 description(testDesc).build();
 
-        JavaFileToMultipartFile myMultiPartFile = new JavaFileToMultipartFile(new File("src/main/resources/image/test.jpg"));
+        JavaFileToMultipartFile myMultiPartFile =
+                new JavaFileToMultipartFile(new File("src/main/resources/image/test.jpg"));
         AdDto adDto = adsController.addAd(newAd, myMultiPartFile, activeUser);
         assertEquals(testTitle, adDto.getTitle());
     }
@@ -327,8 +311,6 @@ public class ControllerTest {
         assertThrows(UnauthorizedException.class,()->{
             commentController.updateComment(numbAd, numbComment, commentDto, activeEnemy);
         });
-
-//        CommentDto commentDto = restTemplate.patchForObject(startPath + "/ads/{idAdd}/comments/{idComment}", commentAdminDto,CommentDto.class,"1","1");
     }
 
 
