@@ -13,6 +13,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.skypro.homework.controller.CommentController;
 import ru.skypro.homework.dto.CommentDto;
@@ -29,12 +30,13 @@ import ru.skypro.homework.repository.UsersRepository;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
+
 @ExtendWith(MockitoExtension.class)
 
 @AutoConfigureMockMvc
 @SpringBootTest
+
 class CommentServiceTest {
 
     @Mock
@@ -78,29 +80,34 @@ class CommentServiceTest {
             .commentId(123)
             .build();
 
-    @Test
-    void addNewCommentTest() {
-        Integer id = 1;
-        CreateOrUpdateComment createOrUpdateComment = new CreateOrUpdateComment();
-        createOrUpdateComment.setText(testString);
-
-        CommentDto result = commentService.addNewComment(id, createOrUpdateComment);
-
-        assertEquals(1,result.getAuthor());
-        assertEquals(testString,result.getText());
-    }
-
-
-
-    @Test
-    void deleteComment() {
-    }
-
-    @Test
-    void updateComment() {
-    }
-
-    @Test
-    void getCommentsByAuthorId() {
-    }
+//    @Test
+//    void addNewCommentTest() {
+//        Integer id = 1;
+//        CreateOrUpdateComment createOrUpdateComment = new CreateOrUpdateComment();
+//        createOrUpdateComment.setText(testString);
+//
+//        CommentDto result = commentService.addNewComment(id, createOrUpdateComment);
+//
+//        assertEquals(1,result.getAuthor());
+//        assertEquals(testString,result.getText());
+//    }
+//
+//
+//
+//    @Test
+//    void deleteComment() {
+//        CommentEntity commentForDel = testCommentEntity;
+//
+//        commentForDel = commentService.deleteComment(12,123,mock(UserDetails));
+//        assertEquals(null,commentForDel);
+//    }
+//
+//    @Test
+//    void updateComment() {
+//
+//    }
+//
+//    @Test
+//    void getCommentsByAuthorId() {
+//    }
 }

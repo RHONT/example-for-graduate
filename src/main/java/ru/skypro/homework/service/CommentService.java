@@ -37,17 +37,17 @@ public class CommentService {
     /**
      * Добавляем комментарий к объявлению
      * @param id
-     * @param text
+     * @param сreateOrUpdateComment
      * @return
      */
 
 
-    public CommentDto addNewComment(Integer id, CreateOrUpdateComment CreateOrUpdateComment) {
+    public CommentDto addNewComment(Integer id, CreateOrUpdateComment сreateOrUpdateComment) {
         AdEntity ad = adsRepository.findById(id).get();
 
         CommentEntity comment = CommentEntity.builder().
                 createdAt(Instant.now().toEpochMilli()).
-                text(CreateOrUpdateComment.getText()).
+                text(сreateOrUpdateComment.getText()).
                 adEntity(ad).
                 userEntity(ad.getAuthor()).build();
         commentsRepository.save(comment);
