@@ -22,7 +22,7 @@ import java.util.Optional;
 @Slf4j
 @RequiredArgsConstructor
 public class ImageService {
-    private final String source = "id-image/";
+    private final String source = "/users/id-image/";
 
     private final ImageRepository imageRepository;
     private final ImageMapper imageMapper;
@@ -31,7 +31,7 @@ public class ImageService {
     /**
      * Сохраняем картинку в базу. Двойное сохранение требуется для установления пути.
      * Так как оно привзяано к id картинки
-     * Example: "id-image/5"
+     * Example: "/id-image/5"
      *
      * @param file
      * @return

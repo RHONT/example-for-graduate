@@ -49,6 +49,7 @@ public class AdService {
      * @return - Возвращаем DTO AdDto
      * @throws IOException
      */
+    @Transactional
     public AdDto adAd(CreateOrUpdateAdDto createOrUpdateAdDto,
                       MultipartFile file,
                       UserDetails userDetails) throws IOException {
