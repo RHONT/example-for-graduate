@@ -10,10 +10,5 @@ import java.util.Optional;
 
 @Repository
 public interface CommentsRepository extends JpaRepository <CommentEntity, Integer> {
-
     void deleteByCommentIdAndAdEntity_Pk (Integer commentId,Integer adId );
-
-    ArrayList<CommentEntity> findCommentEntitiesByUserEntity(UserEntity user);
-
-    Optional<CommentEntity> findByText(String text);
 }
