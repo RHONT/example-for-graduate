@@ -18,10 +18,10 @@ import java.util.Objects;
 public class AdEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "pk")  // id_ad
+    @Column(name = "pk")
     private Integer pk;
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @OneToOne(cascade = CascadeType.ALL )
     @JoinColumn(name = "id_image")
     private ImageEntity imageEntity;
 
