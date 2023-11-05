@@ -2,6 +2,8 @@ package ru.skypro.homework.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.tomcat.util.http.fileupload.IOUtils;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -16,6 +18,10 @@ import ru.skypro.homework.repository.ImageRepository;
 import ru.skypro.homework.service.UserService;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 @Slf4j
 @RestController
@@ -50,10 +56,10 @@ public class UserController {
 
     @ResponseStatus(HttpStatus.OK)
     @PatchMapping(path = "me/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public void uploadAvatarUser(@RequestParam(name = "image") MultipartFile avatarUser,
+    public void updateAvatarUser(@RequestParam(name = "image") MultipartFile avatarUser,
                                  @AuthenticationPrincipal UserDetails userDetails) throws IOException {
         log.info("User {} update avatar", "Id user");
-        userService.uploadAvatar(avatarUser, userDetails);
+        userService.updateAvatar(avatarUser, userDetails);
     }
 
     /**
@@ -62,11 +68,14 @@ public class UserController {
      * @return
      */
     @GetMapping(path = "id-image/{idImage}")
-    public ResponseEntity<byte[]> getAvatarFromDb(@PathVariable Integer idImage) {
+    public ResponseEntity<byte[]> getAvatarFromHardDrive(@PathVariable Integer idImage) throws IOException {
         ImageEntity image = imageRepository.findById(idImage).get();
+        Path path=Path.of(image.getPathHardStore());
+        ByteArrayResource resource=new ByteArrayResource(Files.readAllBytes(path));
+
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.parseMediaType(image.getMediaType()));
-        headers.setContentLength(image.getData().length);
-        return ResponseEntity.status(HttpStatus.OK).headers(headers).body(image.getData());
+        headers.setContentLength(resource.contentLength());
+        return ResponseEntity.status(HttpStatus.OK).headers(headers).body(resource.getByteArray());
     }
 }

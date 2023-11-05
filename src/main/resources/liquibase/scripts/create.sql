@@ -78,4 +78,13 @@ alter table if exists users
 INSERT INTO roles(name)
 VALUES ('USER'), ('ADMIN');
 
+-- changeset rhont:3
+
+ALTER TABLE image_details ADD COLUMN path_hard_store varchar;
+ALTER TABLE image_details ADD COLUMN extension varchar;
+
+-- changeset rhont:4
+
+ALTER TABLE image_details DROP COLUMN image;
+
 

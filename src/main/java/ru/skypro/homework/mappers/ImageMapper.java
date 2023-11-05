@@ -20,7 +20,7 @@ public interface ImageMapper {
 
     ImageEntity ImageDtoToImageEntity(ImageDto imageDto);
 
-    @Mapping(target = "data",expression = "java(file.getBytes())")
+//    @Mapping(target = "data",expression = "java(file.getBytes())")
     @Mapping(target = "fileSize",expression = "java(file.getSize())")
     @Mapping(target = "mediaType",expression = "java(file.getContentType())")
     ImageEntity updateImageEntityFromFile(MultipartFile file, @MappingTarget ImageEntity imageEntity) throws IOException;

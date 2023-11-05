@@ -62,8 +62,9 @@ public class AdService {
         ad.setAuthor(user.get());
         adsRepository.save(ad);
         image.setFilePath(image.getFilePath() + ad.getImageEntity().getId().toString());
+        image.setPathHardStore(image.getPathHardStore() + image.getId()+ image.getExtension());
         imageRepository.save(image);
-
+        imageService.loadImageToHard(image.getId(),file);
         return adsMapper.adEntityToAdDto(ad);
     }
 

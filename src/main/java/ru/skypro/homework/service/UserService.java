@@ -2,8 +2,6 @@ package ru.skypro.homework.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.access.annotation.Secured;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -21,6 +19,7 @@ import ru.skypro.homework.utilclass.JavaFileToMultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Objects;
 import java.util.Optional;
 
 @Slf4j
@@ -34,18 +33,9 @@ public class UserService {
     private final ImageRepository imageRepository;
 
     @Transactional
-    public void uploadAvatar(MultipartFile file, UserDetails userDetails) throws IOException {
+    public void updateAvatar(MultipartFile file, UserDetails userDetails) throws IOException {
         log.info("method uploadAvatar is run");
-
-        if (file==null) {
-            file=  new JavaFileToMultipartFile(new File("src/main/resources/image/test.jpg"));
-        }
-        UserEntity userEntity = usersRepository.findByUsername(userDetails.getUsername()).get();
-        ImageEntity image = imageService.createImageEntity(file);
-        userEntity.setImageEntity(image);
-        usersRepository.save(userEntity);
-        image.setFilePath(image.getFilePath() + userEntity.getImageEntity().getId().toString());
-        imageRepository.save(image);
+        imageService.updateImageUser(userDetails.getUsername(),file);
     }
 
     @Transactional
@@ -74,4 +64,6 @@ public class UserService {
         });
         return setPasswordDto;
     }
+
+
 }

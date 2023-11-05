@@ -22,13 +22,18 @@ public class ImageEntity {
 
     @Column(name = "path_to_file")
     String filePath;
+
+    @Column(name = "path_hard_store")
+    String pathHardStore;
+
+    @Column(name = "extension")
+    String extension;
+
     @Column(name = "file_size")
     private long fileSize;
     @Column(name = "media_type")
     private String mediaType;
-    @Column(name = "image")
-    @Lob
-    private byte[] data;
+
 
     @Override
     public final boolean equals(Object o) {
