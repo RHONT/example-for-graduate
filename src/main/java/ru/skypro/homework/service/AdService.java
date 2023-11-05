@@ -27,6 +27,8 @@ import ru.skypro.homework.repository.ImageRepository;
 import ru.skypro.homework.repository.UsersRepository;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -84,10 +86,13 @@ public class AdService {
      *
      * @param id
      */
-    public void deleteAdEntity(Integer id,UserDetails userDetails) {
+    public void deleteAdEntity(Integer id,UserDetails userDetails) throws IOException {
         Optional<AdEntity> optionalAd = adsRepository.findById(id);
         if (optionalAd.isPresent()) {
             checkAuthority(userDetails,optionalAd.get());
+            if (optionalAd.get().getImageEntity()!=null) {
+                Files.deleteIfExists(Path.of(optionalAd.get().getImageEntity().getPathHardStore()));
+            }
             adsRepository.deleteById(id);
             Optional<AdEntity> checkAd = adsRepository.findById(id);
 

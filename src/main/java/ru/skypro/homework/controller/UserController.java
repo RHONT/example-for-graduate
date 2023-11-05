@@ -17,11 +17,13 @@ import ru.skypro.homework.entities.ImageEntity;
 import ru.skypro.homework.repository.ImageRepository;
 import ru.skypro.homework.service.UserService;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 @Slf4j
 @RestController
@@ -71,8 +73,14 @@ public class UserController {
     public ResponseEntity<byte[]> getAvatarFromHardDrive(@PathVariable Integer idImage) throws IOException {
         ImageEntity image = imageRepository.findById(idImage).get();
         Path path=Path.of(image.getPathHardStore());
-        ByteArrayResource resource=new ByteArrayResource(Files.readAllBytes(path));
+        ByteArrayResource resource;
 
+        if (Files.exists(path)) {
+            resource=new ByteArrayResource(Files.readAllBytes(path));
+        } else {
+            path= Paths.get("src/main/resources/image/test.jpg");
+            resource=new ByteArrayResource(Files.readAllBytes(path));
+        }
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.parseMediaType(image.getMediaType()));
         headers.setContentLength(resource.contentLength());

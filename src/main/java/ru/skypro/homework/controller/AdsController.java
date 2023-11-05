@@ -55,7 +55,7 @@ public class AdsController {
 
     @ResponseStatus(HttpStatus.OK)
     @DeleteMapping(path = "{id}")
-    public void removeAd(@PathVariable Integer id, @AuthenticationPrincipal UserDetails userDetails) {
+    public void removeAd(@PathVariable Integer id, @AuthenticationPrincipal UserDetails userDetails) throws IOException {
 
         adService.deleteAdEntity(id, userDetails);
     }
