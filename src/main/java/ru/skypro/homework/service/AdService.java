@@ -134,7 +134,6 @@ public class AdService {
      * @return
      */
     @Transactional
-
     public AdsDto findMyAds(UserDetails userDetails) {
         UserEntity user = usersRepository.findByUsername(userDetails.getUsername()).get();
         List<AdDto> listAdsDto = adsMapper.ListAdToListDto(user.getAdEntityList());

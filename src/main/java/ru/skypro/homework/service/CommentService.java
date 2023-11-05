@@ -13,12 +13,14 @@ import ru.skypro.homework.dto.CommentsDto;
 import ru.skypro.homework.dto.CreateOrUpdateComment;
 import ru.skypro.homework.entities.AdEntity;
 import ru.skypro.homework.entities.CommentEntity;
+import ru.skypro.homework.entities.UserEntity;
 import ru.skypro.homework.exceptions.NoAdException;
 import ru.skypro.homework.exceptions.NoCommentException;
 import ru.skypro.homework.exceptions.UnauthorizedException;
 import ru.skypro.homework.mappers.CommentsMapper;
 import ru.skypro.homework.repository.AdsRepository;
 import ru.skypro.homework.repository.CommentsRepository;
+import ru.skypro.homework.repository.UsersRepository;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -33,6 +35,7 @@ public class CommentService {
     private final CommentsRepository commentsRepository;
     private final CommentsMapper commentsMapper;
     private final AdsRepository adsRepository;
+    private final UsersRepository usersRepository;
 
     /**
      * Добавляем комментарий к объявлению
@@ -42,14 +45,15 @@ public class CommentService {
      */
 
 
-    public CommentDto addNewComment(Integer id, CreateOrUpdateComment сreateOrUpdateComment) {
+    public CommentDto addNewComment(Integer id, CreateOrUpdateComment сreateOrUpdateComment,UserDetails userDetails) {
         Optional<AdEntity> ad = adsRepository.findById(id);
+        UserEntity userComment=usersRepository.findByUsername(userDetails.getUsername()).get();
 
         CommentEntity comment = CommentEntity.builder().
                 createdAt(Instant.now().toEpochMilli()).
                 text(сreateOrUpdateComment.getText()).
                 adEntity(ad.get()).
-                userEntity(ad.get().getAuthor()).build();
+                userEntity(userComment).build();
         commentsRepository.save(comment);
         return commentsMapper.commentEntityToCommentDto(comment);
     }
