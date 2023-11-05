@@ -55,16 +55,11 @@ public class AdService {
                       UserDetails userDetails) throws IOException {
 
         Optional<UserEntity> user = usersRepository.findByUsername(userDetails.getUsername());
-        ImageEntity image = imageService.createImageEntity(file);
         AdEntity ad = new AdEntity();
         adsMapper.updateAdDtoToAdEntity(createOrUpdateAdDto, ad);
-        ad.setImageEntity(image);
         ad.setAuthor(user.get());
-        adsRepository.save(ad);
-        image.setFilePath(image.getFilePath() + ad.getImageEntity().getId().toString());
-        image.setPathHardStore(image.getPathHardStore() + image.getId()+ image.getExtension());
-        imageRepository.save(image);
-        imageService.loadImageToHard(image.getId(),file);
+        ad=adsRepository.save(ad);
+        imageService.updateImageAd(ad.getPk(), file,userDetails);
         return adsMapper.adEntityToAdDto(ad);
     }
 

@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -77,60 +78,63 @@ public class ImageService {
     /**
      * Обновляем уже существующую картинку объявления
      *
-     * @param id   картинки
+     * @param id   объявления
      * @param file на обновление
      * @return
      */
     public byte[] updateImageAd(Integer id, MultipartFile file, UserDetails userDetails) throws IOException {
         //проверка файла и порезать
         // и его вернуть в конце.
+        if (file == null) {
+            file = new JavaFileToMultipartFile(new File("src/main/resources/image/test.jpg"));
+        }
+        ImageEntity image;
+        ByteArrayResource resource;
         Optional<AdEntity> ad = adsRepository.findById(id);
         if (ad.isPresent()) {
             checkAuthority(userDetails, ad.get());
-            Optional<ImageEntity> image = Optional.ofNullable(ad.get().getImageEntity());
+            Optional<ImageEntity> optionalImageEntity = Optional.ofNullable(ad.get().getImageEntity());
 
-            if (image.isPresent()) {
-                imageMapper.updateImageEntityFromFile(file, image.get());
-                image.get().setExtension(getExtension(file));
-                imageRepository.save(image.get());
-                return file.getBytes();
-            } else {
-                ImageEntity newImage = new ImageEntity();
-                imageMapper.updateImageEntityFromFile(file, newImage);
-                ad.get().setImageEntity(newImage);
-                newImage.setExtension(getExtension(file));
-                adsRepository.save(ad.get());
-                return file.getBytes();
+            if (optionalImageEntity.isPresent()) {
+                image = optionalImageEntity.get();
+                Files.deleteIfExists(Path.of(image.getPathHardStore()));
+                updateAllDataImageEntity(image, file);
+                saveImage(file, image);
+                resource = new ByteArrayResource(Files.readAllBytes(Path.of(image.getPathHardStore())));
+                return resource.getByteArray();
             }
+            image = createImageEntity(file);
+            ad.get().setImageEntity(image);
+            adsRepository.save(ad.get());
+            image.setId(ad.get().getImageEntity().getId());
+            updatePathImageEntity(image, file);
+            saveImage(file, image);
+            resource = new ByteArrayResource(Files.readAllBytes(Path.of(image.getPathHardStore())));
+            return resource.getByteArray();
         }
         log.debug("Ad with id {}, not found", id);
         throw new NoAdException("Ad with id =" + id + "not found");
     }
 
-    //    @Transactional
     public void updateImageUser(String username, MultipartFile file) throws IOException {
         if (file == null) {
             file = new JavaFileToMultipartFile(new File("src/main/resources/image/test.jpg"));
         }
-
         ImageEntity image;
         UserEntity userEntity = usersRepository.findByUsername(username).get();
         if (userEntity.getImageEntity() == null) {
             image = createImageEntity(file);
             userEntity.setImageEntity(image);
-
             usersRepository.save(userEntity);
             image.setId(userEntity.getImageEntity().getId());
             updatePathImageEntity(image, file);
-            loadImageToHard(image.getId(), file);
-            imageRepository.save(image);
+            saveImage(file, image);
             return;
         }
         image = userEntity.getImageEntity();
         Files.deleteIfExists(Path.of(image.getPathHardStore()));
         updateAllDataImageEntity(image, file);
-        loadImageToHard(image.getId(), file);
-        imageRepository.save(image);
+        saveImage(file, image);
     }
 
     public void loadImageToHard(Integer id, MultipartFile file) throws IOException {
@@ -156,6 +160,16 @@ public class ImageService {
         ) {
             bis.transferTo(bout);
             log.debug("file saved successfully");
+        }
+    }
+
+    private void saveImage(MultipartFile file, ImageEntity image) {
+        try {
+            loadImageToHard(image.getId(), file);
+            imageRepository.save(image);
+        } catch (IOException e) {
+            log.debug("Сбой сохранения картинки  id={}", image.getId());
+            throw new RuntimeException("При сохранении картинки - непредвиденный сбой");
         }
     }
 
