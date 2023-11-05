@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import ru.skypro.homework.entities.AdEntity;
 import ru.skypro.homework.entities.ImageEntity;
@@ -54,13 +53,23 @@ public class ImageService {
     public ImageEntity createImageEntity(MultipartFile file) throws IOException {
 
         ImageEntity image = new ImageEntity();
-
         imageMapper.updateImageEntityFromFile(file, image);
-        image.setFilePath(source);
-        image.setFileSize(file.getSize());
-        image.setPathHardStore(sourceSaveToHard);
         image.setExtension(getExtension(file));
         return image;
+    }
+
+    private void updatePathImageEntity(ImageEntity imageEntity, MultipartFile file) {
+        imageEntity.setFilePath(source + imageEntity.getId());
+        imageEntity.setPathHardStore
+                (sourceSaveToHard + imageEntity.getId() + imageEntity.getExtension());
+    }
+
+    private void updateAllDataImageEntity(ImageEntity imageEntity, MultipartFile file) throws IOException {
+        imageMapper.updateImageEntityFromFile(file, imageEntity);
+        imageEntity.setFilePath(source + imageEntity.getId());
+        imageEntity.setExtension(getExtension(file));
+        imageEntity.setPathHardStore
+                (sourceSaveToHard + imageEntity.getId() + imageEntity.getExtension());
     }
 
     //todo Возможны ли ситуации, когда мы можем создать объявление без картинки?
@@ -98,7 +107,7 @@ public class ImageService {
         throw new NoAdException("Ad with id =" + id + "not found");
     }
 
-//    @Transactional
+    //    @Transactional
     public void updateImageUser(String username, MultipartFile file) throws IOException {
         if (file == null) {
             file = new JavaFileToMultipartFile(new File("src/main/resources/image/test.jpg"));
@@ -109,22 +118,18 @@ public class ImageService {
         if (userEntity.getImageEntity() == null) {
             image = createImageEntity(file);
             userEntity.setImageEntity(image);
+
             usersRepository.save(userEntity);
             image.setId(userEntity.getImageEntity().getId());
-            image.setFilePath(image.getFilePath() + image.getId());
-            image.setPathHardStore
-                    (image.getPathHardStore() + image.getId() + image.getExtension());
+            updatePathImageEntity(image, file);
             loadImageToHard(image.getId(), file);
             imageRepository.save(image);
             return;
         }
         image = userEntity.getImageEntity();
         Files.deleteIfExists(Path.of(image.getPathHardStore()));
-        image.setExtension(getExtension(file));
-        image.setFileSize(file.getSize());
-        image.setPathHardStore(sourceSaveToHard+image.getId()+getExtension(file));
+        updateAllDataImageEntity(image, file);
         loadImageToHard(image.getId(), file);
-
         imageRepository.save(image);
     }
 
