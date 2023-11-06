@@ -1,6 +1,5 @@
 package ru.skypro.homework.service;
 
-import org.h2.command.dml.MergeUsing;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,7 +23,6 @@ import ru.skypro.homework.repository.UsersRepository;
 
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -87,6 +85,7 @@ class CommentServiceTest {
     @Test
     void addNewCommentTest() {
         when(adsRepository.findById(anyInt())).thenReturn(Optional.of(adEntityTest));
+        when(usersRepository.findByUsername(anyString())).thenReturn(Optional.ofNullable(testUser));
         UserDetails testUser1 = User.withUsername("testUser").password("123").roles("USER").build();
         CreateOrUpdateComment createOrUpdateComment = new CreateOrUpdateComment();
         createOrUpdateComment.setText(testString);

@@ -8,9 +8,11 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.HttpClientErrorException;
 import ru.skypro.homework.controller.AdsController;
 import ru.skypro.homework.controller.AuthController;
 import ru.skypro.homework.controller.CommentController;
@@ -74,6 +76,8 @@ public class ControllerTest {
     UserDetails activeEnemy;
 
     private final String userNameUser = "user@gmail.com";
+    private final String adminNameUser = "admin@gmail.com";
+    private final String enemyNameUser = "enemy@gmail.com";
 
     RegisterDto registerDto;
 
@@ -81,8 +85,8 @@ public class ControllerTest {
     @Transactional
     @Rollback(value = false)
     void init() {
-        String adminNameUser = "admin@gmail.com";
-        String enemyNameUser = "enemy@gmail.com";
+//         adminNameUser = "admin@gmail.com";
+//        String enemyNameUser = "enemy@gmail.com";
         if (!usersRepository.existsByUsername(userNameUser) &&
                 !usersRepository.existsByUsername(adminNameUser) &&
                 !usersRepository.existsByUsername(enemyNameUser)) {
@@ -208,7 +212,6 @@ public class ControllerTest {
         assertEquals(user.getAdEntityList().size(), adsDto.getCount());
     }
 
-    //todo доделать
     @Test
     void updateImageAdd() {
     }
@@ -229,7 +232,6 @@ public class ControllerTest {
         assertEquals(commentDto.getText(), testComment);
     }
 
-
     @Test
     @Transactional
     void getComments() {
@@ -243,6 +245,7 @@ public class ControllerTest {
     @Test
     @Transactional
     void deleteComment() {
+        authController.login(LoginDto.builder().username(userNameUser).password("123123123").build());
         UserEntity user=usersRepository.findByUsername(userNameUser).get();
         AdEntity ad=user.getAdEntityList().get(0);
         int numbAd=ad.getPk();
@@ -257,6 +260,7 @@ public class ControllerTest {
     @Test
     @Transactional
     void deleteCommentAdmin() {
+        authController.login(LoginDto.builder().username(adminNameUser).password("123123123").build());
         UserEntity user=usersRepository.findByUsername(userNameUser).get();
         AdEntity ad=user.getAdEntityList().get(0);
         int numbAd=ad.getPk();
@@ -271,13 +275,14 @@ public class ControllerTest {
     @Test
     @Transactional
     void deleteCommentEnemyUser() {
+        authController.login(LoginDto.builder().username(enemyNameUser).password("123123123").build());
         UserEntity user=usersRepository.findByUsername(userNameUser).get();
         AdEntity ad=user.getAdEntityList().get(0);
         int numbAd=ad.getPk();
         CommentEntity comment=ad.getCommentEntityList().get(0);
         int numbComment=comment.getCommentId();
 
-        assertThrows(UnauthorizedException.class,()->{
+        assertThrows(AccessDeniedException.class,()->{
             commentController.deleteComment(numbAd, numbComment,activeEnemy);
         });
     }
@@ -286,6 +291,7 @@ public class ControllerTest {
     @Test
     @Transactional
     void updateComment() {
+        authController.login(LoginDto.builder().username(userNameUser).password("123123123").build());
         UserEntity user=usersRepository.findByUsername(userNameUser).get();
         AdEntity ad=user.getAdEntityList().get(0);
         int numbAd=ad.getPk();
@@ -301,6 +307,7 @@ public class ControllerTest {
         CommentDto commentUserDto = commentController.updateComment(numbAd, numbComment, commentDto, activeUser);
         assertEquals(userComment, commentUserDto.getText());
 
+        authController.login(LoginDto.builder().username(adminNameUser).password("123123123").build());
         commentDto.setText(adminComment);
         CommentDto commentAdminDto = commentController.updateComment(numbAd, numbComment, commentDto, activeAdmin);
         assertEquals(adminComment, commentAdminDto.getText());

@@ -198,7 +198,7 @@ public class TestRestAdAndComment {
                         HttpMethod.DELETE,
                         new HttpEntity<>(getHeaderEnemy()),
                         Void.class, idAd);
-        assertThat(exDeleteAdEnemy.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+        assertThat(exDeleteAdEnemy.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
 
         ResponseEntity<AdDto> exUpdateAdEnemy =                 // Другой USER пытается обновить объявление
                 restTemplate.exchange(
@@ -206,7 +206,7 @@ public class TestRestAdAndComment {
                         HttpMethod.PATCH,
                         new HttpEntity<>(updateAdDto, getHeaderEnemy()),
                         AdDto.class, idAd);
-        assertThat(exUpdateAdEnemy.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+        assertThat(exUpdateAdEnemy.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
 
         ResponseEntity<byte[]> exUpdateImageAdEnemy =                 // Другой обновляет чужую картинку объявления
                 restTemplate.exchange(
@@ -214,7 +214,7 @@ public class TestRestAdAndComment {
                         HttpMethod.PATCH,
                         requestEntityWithImage,
                         byte[].class, idAd);
-        assertThat(exUpdateImageAdEnemy.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+        assertThat(exUpdateImageAdEnemy.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
     }
 
     /**
@@ -232,14 +232,14 @@ public class TestRestAdAndComment {
                         HttpMethod.DELETE,
                         new HttpEntity<>(getHeaderEnemy()),
                         Void.class, idAd, idComment);
-        assertThat(exDeleteCommentEnemy.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+        assertThat(exDeleteCommentEnemy.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
 
         ResponseEntity<CommentDto> exUpdateCommentEnemy =                 // Другой USER пытается обновить комментарий
                 restTemplate.exchange(
                         deleteCommentPath, HttpMethod.PATCH,
                         new HttpEntity<>(commentDto, getHeaderEnemy()),
                         CommentDto.class, idAd, idComment);
-        assertThat(exUpdateCommentEnemy.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+        assertThat(exUpdateCommentEnemy.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
 
     }
 
