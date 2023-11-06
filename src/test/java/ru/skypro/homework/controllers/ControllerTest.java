@@ -225,7 +225,7 @@ public class ControllerTest {
         CreateOrUpdateComment comment = new CreateOrUpdateComment();
 
         comment.setText(testComment);
-        CommentDto commentDto = commentController.addComment(ad.getPk(), comment);
+        CommentDto commentDto = commentController.addComment(ad.getPk(), comment,activeUser);
         assertEquals(commentDto.getText(), testComment);
     }
 
