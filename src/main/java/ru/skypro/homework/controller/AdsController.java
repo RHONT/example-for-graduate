@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -44,7 +45,7 @@ public class AdsController {
                        @AuthenticationPrincipal UserDetails userDetails) throws IOException {
         return adService.adAd(properties, file, userDetails);
     }
-
+    @PreAuthorize("isMasterAd(#id)")
     @ResponseStatus(HttpStatus.OK)
     @GetMapping(path = "{id}")
     public ExtendedAdDto getInfoAboutAd(@PathVariable Integer id) {
@@ -61,7 +62,10 @@ public class AdsController {
     }
 
     @ResponseStatus(HttpStatus.OK)
-    @PatchMapping(path = "/{id_ad}")
+    @PreAuthorize("isMasterAd(#id_ad)")
+    @PatchMapping(path = "/{id_ad}",consumes = {
+            MediaType.MULTIPART_FORM_DATA_VALUE
+    })
     public AdDto updateAds(@PathVariable Integer id_ad,
                            @RequestBody CreateOrUpdateAdDto updateAdDto,
                            @AuthenticationPrincipal UserDetails userDetails) {
@@ -69,7 +73,7 @@ public class AdsController {
         return adService.updateAd(id_ad, updateAdDto, userDetails);
     }
 
-    @Secured("ROLE_USER")
+//    @Secured("ROLE_USER")
     @ResponseStatus(HttpStatus.OK)
     @GetMapping(path = "/me")
     public AdsDto getAdsMe(@AuthenticationPrincipal UserDetails userDetails) {
