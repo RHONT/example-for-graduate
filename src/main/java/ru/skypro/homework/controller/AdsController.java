@@ -62,10 +62,10 @@ public class AdsController {
     }
 
     @ResponseStatus(HttpStatus.OK)
-    @PreAuthorize("isMasterAd(#id_ad)")
+    @PreAuthorize("hasRole('ADMIN') or hasPermission(#id_ad,'ad')")
     @PatchMapping(path = "/{id_ad}",consumes = {
             MediaType.MULTIPART_FORM_DATA_VALUE
-    })
+    }, produces = MediaType.APPLICATION_JSON_VALUE)
     public AdDto updateAds(@PathVariable Integer id_ad,
                            @RequestBody CreateOrUpdateAdDto updateAdDto,
                            @AuthenticationPrincipal UserDetails userDetails) {

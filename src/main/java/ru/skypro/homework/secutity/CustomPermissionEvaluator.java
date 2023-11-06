@@ -13,26 +13,23 @@ public class CustomPermissionEvaluator implements PermissionEvaluator {
         if ((auth == null) || (targetDomainObject == null) || !(permission instanceof String)){
             return false;
         }
-        String targetType = targetDomainObject.getClass().getSimpleName().toUpperCase();
+        Integer id = (Integer)targetDomainObject;
+        String typeData=(String) permission;
 
-        return hasPrivilege(auth, targetType, permission.toString().toUpperCase());
+        return hasPrivilege(auth, id, typeData);
     }
-
     @Override
     public boolean hasPermission(
             Authentication auth, Serializable targetId, String targetType, Object permission) {
-        if ((auth == null) || (targetType == null) || !(permission instanceof String)) {
-            return false;
-        }
-        return hasPrivilege(auth, targetType.toUpperCase(),
-                permission.toString().toUpperCase());
+        return false;
     }
-    private boolean hasPrivilege(Authentication auth, String targetType, String permission) {
-        for (GrantedAuthority grantedAuth : auth.getAuthorities()) {
-            if (grantedAuth.getAuthority().startsWith(targetType) &&
-                    grantedAuth.getAuthority().contains(permission)) {
-                return true;
-            }
+    private boolean hasPrivilege(Authentication auth, Integer id, String typeData) {
+        MyPrincipal principal = (MyPrincipal)auth.getPrincipal();
+        if (typeData.equals("ad")) {
+            return principal.getAdsId().contains(id);
+        }
+        if (typeData.equals("comment")) {
+            return principal.getCommentId().contains(id);
         }
         return false;
     }
