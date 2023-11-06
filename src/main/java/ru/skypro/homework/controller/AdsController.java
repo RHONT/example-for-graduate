@@ -45,7 +45,7 @@ public class AdsController {
                        @AuthenticationPrincipal UserDetails userDetails) throws IOException {
         return adService.adAd(properties, file, userDetails);
     }
-    @PreAuthorize("isMasterAd(#id)")
+//    @PreAuthorize("isMasterAd(#id)")
     @ResponseStatus(HttpStatus.OK)
     @GetMapping(path = "{id}")
     public ExtendedAdDto getInfoAboutAd(@PathVariable Integer id) {
@@ -62,10 +62,9 @@ public class AdsController {
     }
 
     @ResponseStatus(HttpStatus.OK)
+//    @PreAuthorize("hasRole('ADMIN') or authentication.principal.getAdsId().contains(#id_ad)")
     @PreAuthorize("hasRole('ADMIN') or hasPermission(#id_ad,'ad')")
-    @PatchMapping(path = "/{id_ad}",consumes = {
-            MediaType.MULTIPART_FORM_DATA_VALUE
-    }, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PatchMapping(path = "/{id_ad}")
     public AdDto updateAds(@PathVariable Integer id_ad,
                            @RequestBody CreateOrUpdateAdDto updateAdDto,
                            @AuthenticationPrincipal UserDetails userDetails) {

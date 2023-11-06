@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
@@ -38,7 +39,8 @@ public class CommentController {
         return commentService.addNewComment(id,CreateOrUpdateComment,userDetails);
     }
 
-    @Secured("ROLE_USER")
+//    @Secured("ROLE_USER")
+
     @ResponseStatus(HttpStatus.OK)
     @DeleteMapping(path = "{adId}/comments/{commentId}")
     public void deleteComment(@PathVariable Integer adId, @PathVariable Integer commentId, @AuthenticationPrincipal UserDetails userDetails) {
@@ -47,6 +49,7 @@ public class CommentController {
 
 
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasRole('ADMIN') or hasPermission(#commentId,'comment')")
     @PatchMapping("{adId}/comments/{commentId}")
     public CommentDto updateComment(@PathVariable Integer adId,
                                                      @PathVariable Integer commentId,
