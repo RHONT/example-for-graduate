@@ -34,11 +34,6 @@ public class CustomMethodSecurityExpressionRoot
         super(authentication);
     }
 
-    public boolean isMasterAd(Integer idAd, CreateOrUpdateAdDto createOrUpdateAdDto, UserDetails userDetails) {
-        UserMinimalDataDto user = ((MyPrincipal) this.getPrincipal()).getUserMinimalDataDto();
-        return user.getAds().contains(idAd);
-    }
-
     public boolean isMasterAd(Integer idAd) {
         UserMinimalDataDto user = ((MyPrincipal) this.getPrincipal()).getUserMinimalDataDto();
         return user.getAds().contains(idAd);
