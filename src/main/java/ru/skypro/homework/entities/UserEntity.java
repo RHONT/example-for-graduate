@@ -43,16 +43,19 @@ public class UserEntity {
 
     @ToString.Exclude
     @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    @JoinTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"),
-    inverseJoinColumns = @JoinColumn(name = "role_id", referencedColumnName = "id"))
-    private List<Role> roles=new ArrayList<>();
+    @JoinTable(name = "user_roles",
+            joinColumns =
+            @JoinColumn(name = "user_id", referencedColumnName = "id"),
+            inverseJoinColumns =
+            @JoinColumn(name = "role_id", referencedColumnName = "id"))
+    private List<Role> roles = new ArrayList<>();
 
     @ToString.Exclude
-    @OneToMany(mappedBy = "author",cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "author", cascade = CascadeType.ALL)
     List<AdEntity> adEntityList;
 
     @ToString.Exclude
-    @OneToMany(mappedBy = "userEntity",cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "userEntity", cascade = CascadeType.ALL)
     List<CommentEntity> commentEntityList;
 
 
@@ -72,9 +75,9 @@ public class UserEntity {
         return this instanceof HibernateProxy ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass().hashCode() : getClass().hashCode();
     }
 
-    public void addAdToList(AdEntity adEntity){
-        if (adEntityList==null) {
-            adEntityList=new ArrayList<>();
+    public void addAdToList(AdEntity adEntity) {
+        if (adEntityList == null) {
+            adEntityList = new ArrayList<>();
         }
         adEntityList.add(adEntity);
     }
