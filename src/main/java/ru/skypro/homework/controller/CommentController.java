@@ -39,9 +39,10 @@ public class CommentController {
         return commentService.addNewComment(id,CreateOrUpdateComment,userDetails);
     }
 
-//    @Secured("ROLE_USER")
+
 
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasRole('ADMIN') or hasPermission(#commentId,'comment')")
     @DeleteMapping(path = "{adId}/comments/{commentId}")
     public void deleteComment(@PathVariable Integer adId, @PathVariable Integer commentId, @AuthenticationPrincipal UserDetails userDetails) {
         commentService.deleteComment(adId,commentId,userDetails);

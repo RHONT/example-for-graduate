@@ -11,7 +11,6 @@ import ru.skypro.homework.dto.UserMinimalDataDto;
 import ru.skypro.homework.entities.AdEntity;
 import ru.skypro.homework.entities.CommentEntity;
 import ru.skypro.homework.entities.UserEntity;
-import ru.skypro.homework.repository.AdsRepository;
 import ru.skypro.homework.repository.UsersRepository;
 
 import java.util.Optional;
@@ -23,7 +22,6 @@ import java.util.stream.Collectors;
 public class CustomUserDetailsService implements UserDetailsService {
 
     private final UsersRepository usersRepository;
-    private final AdsRepository adsRepository;
 
     @Transactional
     @Override
@@ -40,8 +38,12 @@ public class CustomUserDetailsService implements UserDetailsService {
         userMinimalDataDto.setPassword(user.getPassword());
         userMinimalDataDto.setRoles(user.getRoles());
 
-        userMinimalDataDto.setAds(user.getAdEntityList().stream().map(AdEntity::getPk).collect(Collectors.toSet()));
-        userMinimalDataDto.setComments(user.getCommentEntityList().stream().map(CommentEntity::getCommentId).collect(Collectors.toSet()));
+        userMinimalDataDto.setAds(user.getAdEntityList().stream().
+                map(AdEntity::getPk).collect(Collectors.toSet()));
+
+        userMinimalDataDto.setComments(
+                user.getCommentEntityList().
+                        stream().map(CommentEntity::getCommentId).collect(Collectors.toSet()));
 
         return new MyPrincipal(userMinimalDataDto);
     }

@@ -20,6 +20,7 @@ import ru.skypro.homework.entities.UserEntity;
 import ru.skypro.homework.mappers.CommentsMapperImpl;
 import ru.skypro.homework.repository.AdsRepository;
 import ru.skypro.homework.repository.CommentsRepository;
+import ru.skypro.homework.repository.UsersRepository;
 
 
 import java.util.ArrayList;
@@ -36,6 +37,8 @@ class CommentServiceTest {
     CommentsRepository commentsRepository;
     @Mock
     AdsRepository adsRepository;
+    @Mock
+    UsersRepository usersRepository;
 
     CommentService commentService;
 
@@ -49,7 +52,7 @@ class CommentServiceTest {
 
     @BeforeEach
     public void setUp() {
-        commentService = new CommentService(commentsRepository, new CommentsMapperImpl(), adsRepository);
+        commentService = new CommentService(commentsRepository, new CommentsMapperImpl(),adsRepository,usersRepository);
         Role role = new Role();
         role.setId(1);
         role.setName("USER");
@@ -84,10 +87,10 @@ class CommentServiceTest {
     @Test
     void addNewCommentTest() {
         when(adsRepository.findById(anyInt())).thenReturn(Optional.of(adEntityTest));
-
+        UserDetails testUser1 = User.withUsername("testUser").password("123").roles("USER").build();
         CreateOrUpdateComment createOrUpdateComment = new CreateOrUpdateComment();
         createOrUpdateComment.setText(testString);
-        CommentDto result = commentService.addNewComment(testUser.getId(), createOrUpdateComment);
+        CommentDto result = commentService.addNewComment(testUser.getId(), createOrUpdateComment,testUser1);
         assertEquals(testUser.getId(), result.getAuthor());
         assertEquals(testString, result.getText());
     }

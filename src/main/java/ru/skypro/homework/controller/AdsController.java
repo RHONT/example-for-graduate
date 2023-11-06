@@ -39,13 +39,14 @@ public class AdsController {
     }
 
     @ResponseStatus(HttpStatus.OK)
+    @Secured("ROLE_USER")
     @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public AdDto addAd(@RequestPart CreateOrUpdateAdDto properties,
                        @RequestPart(name = "image") MultipartFile file,
                        @AuthenticationPrincipal UserDetails userDetails) throws IOException {
         return adService.adAd(properties, file, userDetails);
     }
-//    @PreAuthorize("isMasterAd(#id)")
+
     @ResponseStatus(HttpStatus.OK)
     @GetMapping(path = "{id}")
     public ExtendedAdDto getInfoAboutAd(@PathVariable Integer id) {
@@ -53,11 +54,10 @@ public class AdsController {
         return adService.findInfoAboutAd(id);
     }
 
-
+    @PreAuthorize("hasRole('ADMIN') or hasPermission(#id,'ad')")
     @ResponseStatus(HttpStatus.OK)
     @DeleteMapping(path = "{id}")
     public void removeAd(@PathVariable Integer id, @AuthenticationPrincipal UserDetails userDetails) throws IOException {
-
         adService.deleteAdEntity(id, userDetails);
     }
 
@@ -72,7 +72,7 @@ public class AdsController {
         return adService.updateAd(id_ad, updateAdDto, userDetails);
     }
 
-//    @Secured("ROLE_USER")
+
     @ResponseStatus(HttpStatus.OK)
     @GetMapping(path = "/me")
     public AdsDto getAdsMe(@AuthenticationPrincipal UserDetails userDetails) {
@@ -80,7 +80,7 @@ public class AdsController {
         return adService.findMyAds(userDetails);
     }
 
-
+    @PreAuthorize("hasRole('ADMIN') or hasPermission(#id,'ad')")
     @PatchMapping(path = "/{id}/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<byte[]> updateImageAd(@PathVariable(name = "id") Integer id,
                                                 @RequestParam("image") MultipartFile image,

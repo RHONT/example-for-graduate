@@ -282,7 +282,7 @@ public class ControllerTest {
         });
     }
 
-    //todo почему-то не работает restTemplate
+
     @Test
     @Transactional
     void updateComment() {

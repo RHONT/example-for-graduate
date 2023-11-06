@@ -17,10 +17,6 @@ import static org.springframework.security.config.Customizer.withDefaults;
 
 
 @Configuration
-//@EnableGlobalMethodSecurity(
-//        prePostEnabled = true,
-//        securedEnabled = true,
-//        jsr250Enabled = true)
 @RequiredArgsConstructor
 public class WebSecurityConfig {
     private final CustomUserDetailsService customUserDetailsService;
