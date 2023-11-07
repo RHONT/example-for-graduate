@@ -160,13 +160,20 @@ public class ImageService {
 //        Files.deleteIfExists(pathFile);
         log.debug("Path for save Image = " + pathFile);
         File saveImageTo;
+        BufferedImage bufferedImage;
         try {
-            BufferedImage bufferedImage = ImageIO.read(file.getInputStream());
+
             saveImageTo = new File(String.valueOf(pathFile));
-            if (file.getSize() > 524288) {
+            if (file.getSize() > 100288) {
+                bufferedImage = ImageIO.read(file.getInputStream());
                 bufferedImage = simpleResizeImage(bufferedImage, 600);
+                ImageIO.write(bufferedImage, extension.substring(1), saveImageTo);
+            } else {
+                bufferedImage = ImageIO.read(file.getInputStream());
+                ImageIO.write(bufferedImage, extension.substring(1), saveImageTo);
             }
-            ImageIO.write(bufferedImage, extension.substring(1), saveImageTo);
+
+            bufferedImage.flush();
         } catch (Exception e) {
             throw new RuntimeException("Что-то пошло не так при сохранении файла");
         }
