@@ -9,6 +9,7 @@ import org.springframework.core.io.ByteArrayResource;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import ru.skypro.homework.entities.AdEntity;
 import ru.skypro.homework.entities.ImageEntity;
@@ -54,6 +55,7 @@ public class ImageService {
      * @return
      * @throws IOException
      */
+    @Transactional
     public ImageEntity createImageEntity(MultipartFile file) throws IOException {
 
         ImageEntity image = new ImageEntity();
@@ -89,7 +91,7 @@ public class ImageService {
         if (file == null) {
             file = new JavaFileToMultipartFile(new File("src/main/resources/image/test.jpg"));
         }
-        ImageEntity imageEntity = imageRepository.save(new ImageEntity());
+        ImageEntity imageEntity;
         ByteArrayResource resource;
         Optional<AdEntity> ad = adsRepository.findById(id);
         if (ad.isPresent()) {
@@ -99,22 +101,23 @@ public class ImageService {
             if (optionalImageEntity.isPresent()) {
                 imageEntity = optionalImageEntity.get();
                 Files.deleteIfExists(Path.of(imageEntity.getPathHardStore()));
-                updateAllDataImageEntity(imageEntity, file);
-                saveImage(file, imageEntity);
+                imageEntity=saveImage(file, imageEntity);
+                resource = new ByteArrayResource(Files.readAllBytes(Path.of(imageEntity.getPathHardStore())));
+                return resource.getByteArray();
+            } else {
+                imageEntity = imageRepository.save(new ImageEntity());
+                imageEntity.setMediaType(file.getContentType());
+                imageEntity=saveImage(file, imageEntity);
+                ad.get().setImageEntity(imageEntity);
+                adsRepository.save(ad.get());
                 resource = new ByteArrayResource(Files.readAllBytes(Path.of(imageEntity.getPathHardStore())));
                 return resource.getByteArray();
             }
-            imageEntity = createImageEntity(file);
-            ad.get().setImageEntity(imageEntity);
-            adsRepository.save(ad.get());
-            imageEntity.setId(ad.get().getImageEntity().getId());
-            updatePathImageEntity(imageEntity, file);
-            saveImage(file, imageEntity);
-            resource = new ByteArrayResource(Files.readAllBytes(Path.of(imageEntity.getPathHardStore())));
-            return resource.getByteArray();
+
         }
         log.debug("Ad with id {}, not found", id);
         throw new NoAdException("Ad with id =" + id + "not found");
+
     }
 
     public void updateImageUser(String username, MultipartFile file) throws Exception {
@@ -126,13 +129,24 @@ public class ImageService {
         if (userEntity.getImageEntity() == null) {
             imageEntity = imageRepository.save(new ImageEntity());
             imageEntity.setMediaType(file.getContentType());
-            saveImage(file, imageEntity);
+            imageEntity=saveImage(file, imageEntity);
+            userEntity.setImageEntity(imageEntity);
+            usersRepository.save(userEntity);
             return;
         }
         imageEntity = userEntity.getImageEntity();
         Files.deleteIfExists(Path.of(imageEntity.getPathHardStore()));
         saveImage(file, imageEntity);
     }
+
+//    public ImageEntity createImageEntityAndSaveFileToServer(MultipartFile file){
+//        if (file == null) {
+//            file = new JavaFileToMultipartFile(new File("src/main/resources/image/test.jpg"));
+//        }
+//        ImageEntity imageEntity=new ImageEntity();
+//
+//
+//    }
 
     public File loadImageToHard(ImageEntity imageEntity, MultipartFile file) throws IOException {
         String extension = getExtension(file);
@@ -143,7 +157,7 @@ public class ImageService {
 //        }
         Path pathFile = Path.of(sourceSaveToHard, imageEntity.getId() + extension);
         Files.createDirectories(pathFile.getParent());
-        Files.deleteIfExists(pathFile);
+//        Files.deleteIfExists(pathFile);
         log.debug("Path for save Image = " + pathFile);
         File saveImageTo;
         try {
@@ -159,11 +173,11 @@ public class ImageService {
         return saveImageTo;
     }
 
-    private void saveImage(MultipartFile file, ImageEntity imageEntity) {
+    private ImageEntity saveImage(MultipartFile file, ImageEntity imageEntity) {
         try {
             File fileSaved = loadImageToHard(imageEntity, file);
             imageMapper.updateImageEntityFromFile(fileSaved, imageEntity);
-            imageRepository.save(imageEntity);
+            return imageRepository.save(imageEntity);
         } catch (IOException e) {
             log.debug("Сбой сохранения картинки  id={}", imageEntity.getId());
             throw new RuntimeException("При сохранении картинки - непредвиденный сбой");
