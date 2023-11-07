@@ -22,7 +22,12 @@ import ru.skypro.homework.repository.ImageRepository;
 import ru.skypro.homework.repository.UsersRepository;
 import ru.skypro.homework.utilclass.JavaFileToMultipartFile;
 
+import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
+import javax.imageio.stream.ImageOutputStream;
+import javax.imageio.stream.MemoryCacheImageOutputStream;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.file.Files;
@@ -161,18 +166,18 @@ public class ImageService {
         log.debug("Path for save Image = " + pathFile);
         File saveImageTo;
         BufferedImage bufferedImage;
-        try {
-
+        try(InputStream is=file.getInputStream();
+            BufferedInputStream bis=new BufferedInputStream(is,1024);
+                ) {
             saveImageTo = new File(String.valueOf(pathFile));
             if (file.getSize() > 100288) {
-                bufferedImage = ImageIO.read(file.getInputStream());
+                bufferedImage = ImageIO.read(bis);
                 bufferedImage = simpleResizeImage(bufferedImage, 600);
                 ImageIO.write(bufferedImage, extension.substring(1), saveImageTo);
             } else {
                 bufferedImage = ImageIO.read(file.getInputStream());
                 ImageIO.write(bufferedImage, extension.substring(1), saveImageTo);
             }
-
             bufferedImage.flush();
         } catch (Exception e) {
             throw new RuntimeException("Что-то пошло не так при сохранении файла");
