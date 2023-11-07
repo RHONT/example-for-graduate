@@ -33,7 +33,7 @@ public class UserService {
     private final ImageRepository imageRepository;
 
     @Transactional
-    public void updateAvatar(MultipartFile file, UserDetails userDetails) throws IOException {
+    public void updateAvatar(MultipartFile file, UserDetails userDetails) throws Exception {
         log.info("method uploadAvatar is run");
         imageService.updateImageUser(userDetails.getUsername(),file);
     }

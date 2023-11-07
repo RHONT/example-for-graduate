@@ -3,6 +3,7 @@ package ru.skypro.homework.service;
 import lombok.RequiredArgsConstructor;
 
 import lombok.extern.slf4j.Slf4j;
+import org.imgscalr.Scalr;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -20,6 +21,8 @@ import ru.skypro.homework.repository.ImageRepository;
 import ru.skypro.homework.repository.UsersRepository;
 import ru.skypro.homework.utilclass.JavaFileToMultipartFile;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -54,7 +57,7 @@ public class ImageService {
     public ImageEntity createImageEntity(MultipartFile file) throws IOException {
 
         ImageEntity image = new ImageEntity();
-        imageMapper.updateImageEntityFromFile(file, image);
+//        imageMapper.updateImageEntityFromFile(file, image);
         image.setExtension(getExtension(file));
         return image;
     }
@@ -66,14 +69,12 @@ public class ImageService {
     }
 
     private void updateAllDataImageEntity(ImageEntity imageEntity, MultipartFile file) throws IOException {
-        imageMapper.updateImageEntityFromFile(file, imageEntity);
+//        imageMapper.updateImageEntityFromFile(file, imageEntity);
         imageEntity.setFilePath(source + imageEntity.getId());
         imageEntity.setExtension(getExtension(file));
         imageEntity.setPathHardStore
                 (sourceSaveToHard + imageEntity.getId() + imageEntity.getExtension());
     }
-
-    //todo Возможны ли ситуации, когда мы можем создать объявление без картинки?
 
     /**
      * Обновляем уже существующую картинку объявления
@@ -88,7 +89,7 @@ public class ImageService {
         if (file == null) {
             file = new JavaFileToMultipartFile(new File("src/main/resources/image/test.jpg"));
         }
-        ImageEntity image;
+        ImageEntity imageEntity = imageRepository.save(new ImageEntity());
         ByteArrayResource resource;
         Optional<AdEntity> ad = adsRepository.findById(id);
         if (ad.isPresent()) {
@@ -96,79 +97,75 @@ public class ImageService {
             Optional<ImageEntity> optionalImageEntity = Optional.ofNullable(ad.get().getImageEntity());
 
             if (optionalImageEntity.isPresent()) {
-                image = optionalImageEntity.get();
-                Files.deleteIfExists(Path.of(image.getPathHardStore()));
-                updateAllDataImageEntity(image, file);
-                saveImage(file, image);
-                resource = new ByteArrayResource(Files.readAllBytes(Path.of(image.getPathHardStore())));
+                imageEntity = optionalImageEntity.get();
+                Files.deleteIfExists(Path.of(imageEntity.getPathHardStore()));
+                updateAllDataImageEntity(imageEntity, file);
+                saveImage(file, imageEntity);
+                resource = new ByteArrayResource(Files.readAllBytes(Path.of(imageEntity.getPathHardStore())));
                 return resource.getByteArray();
             }
-            image = createImageEntity(file);
-            ad.get().setImageEntity(image);
+            imageEntity = createImageEntity(file);
+            ad.get().setImageEntity(imageEntity);
             adsRepository.save(ad.get());
-            image.setId(ad.get().getImageEntity().getId());
-            updatePathImageEntity(image, file);
-            saveImage(file, image);
-            resource = new ByteArrayResource(Files.readAllBytes(Path.of(image.getPathHardStore())));
+            imageEntity.setId(ad.get().getImageEntity().getId());
+            updatePathImageEntity(imageEntity, file);
+            saveImage(file, imageEntity);
+            resource = new ByteArrayResource(Files.readAllBytes(Path.of(imageEntity.getPathHardStore())));
             return resource.getByteArray();
         }
         log.debug("Ad with id {}, not found", id);
         throw new NoAdException("Ad with id =" + id + "not found");
     }
 
-    public void updateImageUser(String username, MultipartFile file) throws IOException {
+    public void updateImageUser(String username, MultipartFile file) throws Exception {
         if (file == null) {
             file = new JavaFileToMultipartFile(new File("src/main/resources/image/test.jpg"));
         }
-        ImageEntity image;
+        ImageEntity imageEntity;
         UserEntity userEntity = usersRepository.findByUsername(username).get();
         if (userEntity.getImageEntity() == null) {
-            image = createImageEntity(file);
-            userEntity.setImageEntity(image);
-            usersRepository.save(userEntity);
-            image.setId(userEntity.getImageEntity().getId());
-            updatePathImageEntity(image, file);
-            saveImage(file, image);
+            imageEntity = imageRepository.save(new ImageEntity());
+            imageEntity.setMediaType(file.getContentType());
+            saveImage(file, imageEntity);
             return;
         }
-        image = userEntity.getImageEntity();
-        Files.deleteIfExists(Path.of(image.getPathHardStore()));
-        updateAllDataImageEntity(image, file);
-        saveImage(file, image);
+        imageEntity = userEntity.getImageEntity();
+        Files.deleteIfExists(Path.of(imageEntity.getPathHardStore()));
+        saveImage(file, imageEntity);
     }
 
-    public void loadImageToHard(Integer id, MultipartFile file) throws IOException {
+    public File loadImageToHard(ImageEntity imageEntity, MultipartFile file) throws IOException {
         String extension = getExtension(file);
+        imageEntity.setExtension(extension);
 //        if (!ViewSelect.onlyImage(extension)) {
 //            log.warn("Format " + extension + "not supported in ViewSelect.class");
 //            throw new IllegalFormatContentException(extension);
 //        }
-        Path pathFile = Path.of(sourceSaveToHard, id + extension);
-        // abc/abc/test.text :: getParent - > abc/abc/
-        // createDirectories - создает директории если их нет.
+        Path pathFile = Path.of(sourceSaveToHard, imageEntity.getId() + extension);
         Files.createDirectories(pathFile.getParent());
-        // deleteIfExists -удаляет файл если он уже существует
         Files.deleteIfExists(pathFile);
-
         log.debug("Path for save Image = " + pathFile);
-
-        try (
-                InputStream is = file.getInputStream();
-                OutputStream out = Files.newOutputStream(pathFile, CREATE_NEW);
-                BufferedInputStream bis = new BufferedInputStream(is, 2048);
-                BufferedOutputStream bout = new BufferedOutputStream(out, 2048);
-        ) {
-            bis.transferTo(bout);
-            log.debug("file saved successfully");
+        File saveImageTo;
+        try {
+            BufferedImage bufferedImage = ImageIO.read(file.getInputStream());
+            saveImageTo = new File(String.valueOf(pathFile));
+            if (file.getSize() > 524288) {
+                bufferedImage = simpleResizeImage(bufferedImage, 600);
+            }
+            ImageIO.write(bufferedImage, extension.substring(1), saveImageTo);
+        } catch (Exception e) {
+            throw new RuntimeException("Что-то пошло не так при сохранении файла");
         }
+        return saveImageTo;
     }
 
-    private void saveImage(MultipartFile file, ImageEntity image) {
+    private void saveImage(MultipartFile file, ImageEntity imageEntity) {
         try {
-            loadImageToHard(image.getId(), file);
-            imageRepository.save(image);
+            File fileSaved = loadImageToHard(imageEntity, file);
+            imageMapper.updateImageEntityFromFile(fileSaved, imageEntity);
+            imageRepository.save(imageEntity);
         } catch (IOException e) {
-            log.debug("Сбой сохранения картинки  id={}", image.getId());
+            log.debug("Сбой сохранения картинки  id={}", imageEntity.getId());
             throw new RuntimeException("При сохранении картинки - непредвиденный сбой");
         }
     }
@@ -207,6 +204,10 @@ public class ImageService {
             log.debug("Attempted unauthorized access id ad={}", ad.getPk());
             throw new UnauthorizedException("Attempted unauthorized access");
         }
+    }
+
+    private BufferedImage simpleResizeImage(BufferedImage originalImage, int targetWidth) throws Exception {
+        return Scalr.resize(originalImage, targetWidth);
     }
 
 }
