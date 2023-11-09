@@ -6,6 +6,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import ru.skypro.homework.dto.CommentDto;
@@ -30,6 +31,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
+@SpringBootTest
 class CommentServiceTest {
     @Mock
     CommentsRepository commentsRepository;

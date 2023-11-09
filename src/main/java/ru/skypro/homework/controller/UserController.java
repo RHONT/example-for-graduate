@@ -1,5 +1,9 @@
 package ru.skypro.homework.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
@@ -35,6 +39,19 @@ public class UserController {
     private final UserService userService;
     private final ImageRepository imageRepository;
 
+    @Operation(
+            summary = "Установка пароля",
+            responses = {
+                    @ApiResponse(responseCode = "201",
+                            description = "Установлено",
+                            content = @Content(
+                                    mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = SetPasswordDto.class)
+                            )),
+                    @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content(schema = @Schema(hidden = true)))
+            },
+            tags = "Пользователь"
+    )
     @ResponseStatus(HttpStatus.OK)
     @PostMapping(path = "set_password")
     public SetPasswordDto setPassword(@RequestBody SetPasswordDto setPasswordDto, @AuthenticationPrincipal UserDetails userDetails) {
@@ -43,6 +60,19 @@ public class UserController {
     }
 
 
+    @Operation(
+            summary = "Информация о пользователе",
+            responses = {
+                    @ApiResponse(responseCode = "201",
+                            description = "Информация предоставлена",
+                            content = @Content(
+                                    mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = UserDto.class)
+                            )),
+                    @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content(schema = @Schema(hidden = true)))
+            },
+            tags = "Пользователь"
+    )
     @ResponseStatus(HttpStatus.OK)
     @GetMapping(path = "me")
     public UserDto infoAboutAuthUser(@AuthenticationPrincipal UserDetails userDetails) {
@@ -50,6 +80,19 @@ public class UserController {
     }
 
 
+    @Operation(
+            summary = "Изменение информации о пользователе",
+            responses = {
+                    @ApiResponse(responseCode = "201",
+                            description = "Информация обновлена",
+                            content = @Content(
+                                    mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = UpdateUserDto.class)
+                            )),
+                    @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content(schema = @Schema(hidden = true)))
+            },
+            tags = "Пользователь"
+    )
     @ResponseStatus(HttpStatus.OK)
     @Secured("ROLE_USER")
     @PatchMapping(path = "me")
@@ -58,6 +101,15 @@ public class UserController {
     }
 
 
+    @Operation(
+            summary = "Обновление аватара пользователя",
+            responses = {
+                    @ApiResponse(responseCode = "201",
+                            description = "Аватар обновлена"),
+                    @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content(schema = @Schema(hidden = true)))
+            },
+            tags = "Пользователь"
+    )
     @ResponseStatus(HttpStatus.OK)
     @PatchMapping(path = "me/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public void updateAvatarUser(@RequestParam(name = "image") MultipartFile avatarUser,
@@ -66,11 +118,20 @@ public class UserController {
         userService.updateAvatar(avatarUser, userDetails);
     }
 
-    /**
-     * Точка доступа для картинок
-     * @param idImage
-     * @return
-     */
+    @Operation(
+            summary = "Обновление аватара пользователя",
+            responses = {
+                    @ApiResponse(responseCode = "201",
+                            description = "Аватар обновлен",
+                            content = @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(implementation = MultipartFile.class)
+                            )
+                    ),
+                    @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content(schema = @Schema(hidden = true)))
+            },
+            tags = "Пользователь"
+    )
     @GetMapping(path = "id-image/{idImage}")
     public ResponseEntity<byte[]> getAvatarFromHardDrive(@PathVariable Integer idImage) throws IOException {
         ImageEntity image = imageRepository.findById(idImage).get();
