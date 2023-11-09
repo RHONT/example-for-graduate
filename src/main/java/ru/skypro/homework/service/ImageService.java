@@ -118,19 +118,15 @@ public class ImageService {
         String extension = getExtension(file);
         imageEntity.setExtension(extension);
         imageEntity.setMediaType(file.getContentType());
-//        if (!ViewSelect.onlyImage(extension)) {
-//            log.warn("Format " + extension + "not supported in ViewSelect.class");
-//            throw new IllegalFormatContentException(extension);
-//        }
         Path pathFile = Path.of(sourceSaveToHard, imageEntity.getId() + extension);
         Files.createDirectories(pathFile.getParent());
         log.debug("Path for save Image = " + pathFile);
         File saveImageTo;
         BufferedImage bufferedImage;
         try(InputStream is=file.getInputStream();
-            BufferedInputStream bis=new BufferedInputStream(is,4200);
+            BufferedInputStream bis=new BufferedInputStream(is,4000);
             OutputStream out = Files.newOutputStream(pathFile,CREATE_NEW);
-            BufferedOutputStream bout = new BufferedOutputStream(out, 4200);
+            BufferedOutputStream bout = new BufferedOutputStream(out, 600);
                 ) {
             saveImageTo = new File(String.valueOf(pathFile));
             if (file.getSize() > 100288) {
