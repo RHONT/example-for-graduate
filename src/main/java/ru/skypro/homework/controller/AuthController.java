@@ -40,7 +40,6 @@ public class AuthController {
     private final UserMapper userMapper;
 
     @PostMapping("/login")
-//    @Transactional
     public ResponseEntity<?> login(@RequestBody LoginDto loginDto) {
         Authentication authentication = authManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
@@ -55,7 +54,7 @@ public class AuthController {
         if (usersRepository.existsByUsername(registerDto.getUsername())) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
-        Optional<Role> role= Optional.empty();
+        Optional<Role> role;
 
         if (registerDto.getRole()==null || !checkRole(registerDto.getRole())) {
             role = roleRepository.findByName("USER");

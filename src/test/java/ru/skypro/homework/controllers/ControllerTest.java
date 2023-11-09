@@ -21,7 +21,7 @@ import ru.skypro.homework.dto.*;
 import ru.skypro.homework.entities.AdEntity;
 import ru.skypro.homework.entities.CommentEntity;
 import ru.skypro.homework.entities.UserEntity;
-import ru.skypro.homework.exceptions.UnauthorizedException;
+import ru.skypro.homework.exceptions.ForbiddenException;
 import ru.skypro.homework.repository.*;
 import org.assertj.core.api.Assertions;
 import ru.skypro.homework.service.AdService;
@@ -282,7 +282,7 @@ public class ControllerTest {
         CommentEntity comment=ad.getCommentEntityList().get(0);
         int numbComment=comment.getCommentId();
 
-        assertThrows(AccessDeniedException.class,()->{
+        assertThrows(ForbiddenException.class,()->{
             commentController.deleteComment(numbAd, numbComment,activeEnemy);
         });
     }
@@ -313,7 +313,7 @@ public class ControllerTest {
         assertEquals(adminComment, commentAdminDto.getText());
 
         commentDto.setText(enemyComment);
-        assertThrows(UnauthorizedException.class,()->{
+        assertThrows(ForbiddenException.class,()->{
             commentController.updateComment(numbAd, numbComment, commentDto, activeEnemy);
         });
     }
