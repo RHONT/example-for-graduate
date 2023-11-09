@@ -87,7 +87,7 @@ public class CommentController {
             tags = "Комментарий"
     )
     @ResponseStatus(HttpStatus.OK)
-    @PreAuthorize("hasRole('ADMIN') or hasPermission(#commentId,'comment')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
     @DeleteMapping(path = "{adId}/comments/{commentId}")
     public void deleteComment(@PathVariable Integer adId, @PathVariable Integer commentId, @AuthenticationPrincipal UserDetails userDetails) {
         commentService.deleteComment(adId,commentId,userDetails);
@@ -110,7 +110,7 @@ public class CommentController {
             tags = "Комментарий"
     )
     @ResponseStatus(HttpStatus.OK)
-    @PreAuthorize("hasRole('ADMIN') or hasPermission(#commentId,'comment')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
     @PatchMapping("{adId}/comments/{commentId}")
     public CommentDto updateComment(@PathVariable Integer adId,
                                                      @PathVariable Integer commentId,

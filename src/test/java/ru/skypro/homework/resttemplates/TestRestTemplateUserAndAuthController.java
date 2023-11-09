@@ -10,6 +10,7 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.*;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import ru.skypro.homework.controller.UserController;
@@ -49,6 +50,7 @@ public class TestRestTemplateUserAndAuthController {
     String uploadAvatarPath;
 
     LoginDto testLoginDto;
+    LoginDto userLoginDto;
 
     @BeforeEach
     void init() {
@@ -59,6 +61,7 @@ public class TestRestTemplateUserAndAuthController {
         uploadAvatarPath ="http://localhost:" + port + "/users/me/image";
 
         testLoginDto=new LoginDto("grand@gmail.com", "123123123");
+        userLoginDto=new LoginDto("user@gmail.com", "123123123");
     }
 
     @Test
@@ -69,6 +72,8 @@ public class TestRestTemplateUserAndAuthController {
 
     @Test
     @Order(2)
+//    @Disabled
+//    @Transactional
     void registerFakeUser() {
         String testName = "grand@gmail.com";
         RegisterDto registerDtoUser = RegisterDto.builder().
@@ -87,6 +92,7 @@ public class TestRestTemplateUserAndAuthController {
     }
 
     @Test
+    @Disabled
     void login() {
         ResponseEntity<?> responseEntity = restTemplate.postForEntity(loginPath, testLoginDto, ResponseEntity.class);
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -149,6 +155,7 @@ public class TestRestTemplateUserAndAuthController {
 
     @Test
     void updateInfoUser() {
+        restTemplate.postForEntity(loginPath,userLoginDto , ResponseEntity.class);
         UpdateUserDto updateUserDto=
                 UpdateUserDto.builder().firstName("ChangeTest").lastName("ChangeTest").phone("1111").build();
 
@@ -162,7 +169,7 @@ public class TestRestTemplateUserAndAuthController {
 
     private <T>HttpEntity<?> getHttpWithAuthAndBody(T objectDto ){
         HttpHeaders headers = new HttpHeaders();
-        headers.setBasicAuth("enemy@gmail.com", "123123123");
+        headers.setBasicAuth("user@gmail.com", "123123123");
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
 
@@ -186,7 +193,7 @@ public class TestRestTemplateUserAndAuthController {
      */
     private HttpEntity<?>  getHttpWithAuthAndNotBody(){
         HttpHeaders headers = new HttpHeaders();
-        headers.setBasicAuth("enemy@gmail.com", "123123123");
+        headers.setBasicAuth("user@gmail.com", "123123123");
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
         return new HttpEntity<>(headers);

@@ -6,7 +6,6 @@ import lombok.Data;
 
 @Data
 @Builder
-@AllArgsConstructor
 public class RegisterDto {
 
     private String username;

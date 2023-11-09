@@ -109,7 +109,7 @@ public class AdsController {
             },
             tags = "Объявление"
     )
-    @PreAuthorize("hasRole('ADMIN') or hasPermission(#id,'ad')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
     @ResponseStatus(HttpStatus.OK)
     @DeleteMapping(path = "{id}")
     public void removeAd(@PathVariable Integer id, @AuthenticationPrincipal UserDetails userDetails) throws IOException {
@@ -132,8 +132,7 @@ public class AdsController {
             tags = "Объявление"
     )
     @ResponseStatus(HttpStatus.OK)
-//    @PreAuthorize("hasRole('ADMIN') or authentication.principal.getAdsId().contains(#id_ad)")
-    @PreAuthorize("hasRole('ADMIN') or hasPermission(#id_ad,'ad')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
     @PatchMapping(path = "/{id_ad}")
     public AdDto updateAds(@PathVariable Integer id_ad,
                            @RequestBody CreateOrUpdateAdDto updateAdDto,
@@ -181,7 +180,7 @@ public class AdsController {
             },
             tags = "Объявление"
     )
-    @PreAuthorize("hasRole('ADMIN') or hasPermission(#id,'ad')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
     @PatchMapping(path = "/{id}/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<byte[]> updateImageAd(@PathVariable(name = "id") Integer id,
                                                 @RequestParam("image") MultipartFile image,

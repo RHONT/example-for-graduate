@@ -59,7 +59,7 @@ public class AuthController {
             tags = "Объявление"
     )
     @PostMapping("/login")
-//    @Transactional
+    @Transactional
     public ResponseEntity<?> login(@RequestBody LoginDto loginDto) {
         Authentication authentication = authManager.authenticate(
                 new UsernamePasswordAuthenticationToken(

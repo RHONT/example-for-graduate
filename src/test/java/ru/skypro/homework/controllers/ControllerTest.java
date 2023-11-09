@@ -87,6 +87,7 @@ public class ControllerTest {
     @Transactional
     @Rollback(value = false)
     void init() {
+
         if (!usersRepository.existsByUsername(userNameUser) &&
                 !usersRepository.existsByUsername(adminNameUser) &&
                 !usersRepository.existsByUsername(enemyNameUser)) {
