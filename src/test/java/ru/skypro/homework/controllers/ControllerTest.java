@@ -3,6 +3,7 @@ package ru.skypro.homework.controllers;
 
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
@@ -12,7 +13,6 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.HttpClientErrorException;
 import ru.skypro.homework.controller.AdsController;
 import ru.skypro.homework.controller.AuthController;
 import ru.skypro.homework.controller.CommentController;
@@ -41,6 +41,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class ControllerTest {
     @LocalServerPort
     private int port;
+    @Value("${path.avito.image.folder.test}")
+    private String pathToTestImage;
     @Autowired
     private TestRestTemplate restTemplate;
     @Autowired
@@ -85,8 +87,6 @@ public class ControllerTest {
     @Transactional
     @Rollback(value = false)
     void init() {
-//         adminNameUser = "admin@gmail.com";
-//        String enemyNameUser = "enemy@gmail.com";
         if (!usersRepository.existsByUsername(userNameUser) &&
                 !usersRepository.existsByUsername(adminNameUser) &&
                 !usersRepository.existsByUsername(enemyNameUser)) {
@@ -192,7 +192,7 @@ public class ControllerTest {
                 description(testDesc).build();
 
         JavaFileToMultipartFile myMultiPartFile =
-                new JavaFileToMultipartFile(new File("src/main/resources/image/test.jpg"));
+                new JavaFileToMultipartFile(new File(pathToTestImage));
         AdDto adDto = adsController.addAd(newAd, myMultiPartFile, activeUser);
         assertEquals(testTitle, adDto.getTitle());
     }

@@ -3,6 +3,7 @@ package ru.skypro.homework.controller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -34,6 +35,8 @@ import java.nio.file.Paths;
 public class UserController {
     private final UserService userService;
     private final ImageRepository imageRepository;
+    @Value("${path.avito.image.folder.test}")
+    private String pathToTestImage;
 
     @ResponseStatus(HttpStatus.OK)
     @PostMapping(path = "set_password")
@@ -80,7 +83,7 @@ public class UserController {
         if (Files.exists(path)) {
             resource=new ByteArrayResource(Files.readAllBytes(path));
         } else {
-            path= Paths.get("src/main/resources/image/test.jpg");
+            path= Paths.get(pathToTestImage);
             resource=new ByteArrayResource(Files.readAllBytes(path));
         }
         HttpHeaders headers = new HttpHeaders();

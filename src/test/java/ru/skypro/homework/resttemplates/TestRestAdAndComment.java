@@ -2,6 +2,7 @@ package ru.skypro.homework.resttemplates;
 
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
@@ -36,6 +37,8 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 public class TestRestAdAndComment {
     @LocalServerPort
     int port;
+    @Value("${path.avito.image.folder.test}")
+    private String pathToTestImage;
     @Autowired
     private AdsController adsController;
     @Autowired
@@ -389,7 +392,7 @@ public class TestRestAdAndComment {
      * Из файла делаем экземпляр FileSystemResource, ибо обычный файл не запихнуть в клиентский запрос
      */
     private FileSystemResource getTestFile() {
-        Path testFile = Paths.get("src/main/resources/image/test.jpg");
+        Path testFile = Paths.get(pathToTestImage);
         return new FileSystemResource(testFile);
     }
 

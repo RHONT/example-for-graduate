@@ -43,6 +43,8 @@ import static java.nio.file.StandardOpenOption.CREATE_NEW;
 public class ImageService {
     @Value("${path.avito.image.folder}")
     private String sourceSaveToHard;
+    @Value("${path.avito.image.folder.test}")
+    private String pathToTestImage;
 
     private final ImageRepository imageRepository;
     private final ImageMapper imageMapper;
@@ -57,7 +59,7 @@ public class ImageService {
      */
     public byte[] updateImageAd(Integer idAd, MultipartFile file, UserDetails userDetails) throws IOException {
         if (file == null) {
-            file = new JavaFileToMultipartFile(new File("src/main/resources/image/test.jpg"));
+            file = new JavaFileToMultipartFile(new File(pathToTestImage));
         }
         ImageEntity imageEntity;
         ByteArrayResource resource;
@@ -74,7 +76,6 @@ public class ImageService {
                 return resource.getByteArray();
             } else {
                 imageEntity = imageRepository.save(new ImageEntity());
-                imageEntity.setMediaType(file.getContentType());
                 imageEntity=saveImage(file, imageEntity);
                 ad.get().setImageEntity(imageEntity);
                 adsRepository.save(ad.get());
@@ -85,7 +86,6 @@ public class ImageService {
         }
         log.debug("Ad with id {}, not found", idAd);
         throw new NoAdException("Ad with id =" + idAd + "not found");
-
     }
 
     /**
@@ -96,13 +96,12 @@ public class ImageService {
      */
     public void updateImageUser(String username, MultipartFile file) throws Exception {
         if (file == null) {
-            file = new JavaFileToMultipartFile(new File("src/main/resources/image/test.jpg"));
+            file = new JavaFileToMultipartFile(new File(pathToTestImage));
         }
         ImageEntity imageEntity;
         UserEntity userEntity = usersRepository.findByUsername(username).get();
         if (userEntity.getImageEntity() == null) {
             imageEntity = imageRepository.save(new ImageEntity());
-            imageEntity.setMediaType(file.getContentType());
             imageEntity=saveImage(file, imageEntity);
             userEntity.setImageEntity(imageEntity);
             usersRepository.save(userEntity);
@@ -124,6 +123,7 @@ public class ImageService {
     public File loadImageToHard(ImageEntity imageEntity, MultipartFile file) throws IOException {
         String extension = getExtension(file);
         imageEntity.setExtension(extension);
+        imageEntity.setMediaType(file.getContentType());
 //        if (!ViewSelect.onlyImage(extension)) {
 //            log.warn("Format " + extension + "not supported in ViewSelect.class");
 //            throw new IllegalFormatContentException(extension);
