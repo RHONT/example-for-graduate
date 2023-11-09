@@ -7,19 +7,16 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
-import ru.skypro.homework.dto.AdsDto;
 import ru.skypro.homework.dto.LoginDto;
 import ru.skypro.homework.dto.RegisterDto;
 import ru.skypro.homework.entities.Role;
@@ -29,7 +26,6 @@ import ru.skypro.homework.repository.RoleRepository;
 import ru.skypro.homework.repository.UsersRepository;
 
 import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
 
 @Slf4j
@@ -64,10 +60,9 @@ public class AuthController {
                 new UsernamePasswordAuthenticationToken(
                         loginDto.getUsername(),
                         loginDto.getPassword()));
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-            return ResponseEntity.status(HttpStatus.OK).build();
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        return ResponseEntity.status(HttpStatus.OK).build();
     }
-
 
     @Operation(
             summary = "Регистрация пользователя",
@@ -89,7 +84,7 @@ public class AuthController {
         }
         Optional<Role> role;
 
-        if (registerDto.getRole()==null || !checkRole(registerDto.getRole())) {
+        if (registerDto.getRole() == null || !checkRole(registerDto.getRole())) {
             role = roleRepository.findByName("USER");
         } else {
             role = roleRepository.findByName(registerDto.getRole());

@@ -73,8 +73,6 @@ public class CommentController {
         return commentService.addNewComment(id,CreateOrUpdateComment,userDetails);
     }
 
-
-
     @Operation(
             summary = "Удаление комментария",
             responses = {
@@ -92,7 +90,6 @@ public class CommentController {
     public void deleteComment(@PathVariable Integer adId, @PathVariable Integer commentId, @AuthenticationPrincipal UserDetails userDetails) {
         commentService.deleteComment(adId,commentId,userDetails);
     }
-
 
     @Operation(
             summary = "Изменение комментария",

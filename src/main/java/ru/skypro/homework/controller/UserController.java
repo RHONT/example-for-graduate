@@ -6,7 +6,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpHeaders;
@@ -23,10 +22,7 @@ import ru.skypro.homework.entities.ImageEntity;
 import ru.skypro.homework.repository.ImageRepository;
 import ru.skypro.homework.service.UserService;
 
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -62,7 +58,6 @@ public class UserController {
         return userService.setPassword(setPasswordDto, userDetails);
     }
 
-
     @Operation(
             summary = "Информация о пользователе",
             responses = {
@@ -81,7 +76,6 @@ public class UserController {
     public UserDto infoAboutAuthUser(@AuthenticationPrincipal UserDetails userDetails) {
         return userService.getInfoAboutUser(userDetails);
     }
-
 
     @Operation(
             summary = "Изменение информации о пользователе",
@@ -102,7 +96,6 @@ public class UserController {
     public UpdateUserDto updateUserDto(@RequestBody UpdateUserDto updateUserDto, @AuthenticationPrincipal UserDetails userDetails) {
         return userService.updateInfoUser(updateUserDto, userDetails);
     }
-
 
     @Operation(
             summary = "Обновление аватара пользователя",
