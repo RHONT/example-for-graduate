@@ -1,8 +1,13 @@
 package ru.skypro.homework.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -14,6 +19,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+import ru.skypro.homework.dto.AdsDto;
 import ru.skypro.homework.dto.LoginDto;
 import ru.skypro.homework.dto.RegisterDto;
 import ru.skypro.homework.entities.Role;
@@ -39,6 +45,19 @@ public class AuthController {
     private final PasswordEncoder passwordEncoder;
     private final UserMapper userMapper;
 
+    @Operation(
+            summary = "Вход пользователя",
+            description = "Аутентификация пользователя и выдача токена доступа.",
+            responses = {
+                    @ApiResponse(responseCode = "200",
+                            description = "Успешный вход в систему",
+                            content = @Content(schema = @Schema(implementation = String.class))
+                    ),
+                    @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content(schema = @Schema(hidden = true))
+                    )
+            },
+            tags = "Объявление"
+    )
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginDto loginDto) {
         Authentication authentication = authManager.authenticate(
@@ -49,6 +68,20 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.OK).build();
     }
 
+
+    @Operation(
+            summary = "Регистрация пользователя",
+            description = "Регтстрация пользователя.",
+            responses = {
+                    @ApiResponse(responseCode = "200",
+                            description = "Успешный вход в систему",
+                            content = @Content(schema = @Schema(implementation = String.class))
+                    ),
+                    @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content(schema = @Schema(hidden = true))
+                    )
+            },
+            tags = "Объявление"
+    )
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody RegisterDto registerDto) {
         if (usersRepository.existsByUsername(registerDto.getUsername())) {
