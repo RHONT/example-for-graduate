@@ -2,9 +2,6 @@ package ru.skypro.homework.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.access.annotation.Secured;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -15,12 +12,10 @@ import ru.skypro.homework.dto.AdsDto;
 import ru.skypro.homework.dto.CreateOrUpdateAdDto;
 import ru.skypro.homework.dto.ExtendedAdDto;
 import ru.skypro.homework.entities.AdEntity;
-import ru.skypro.homework.entities.CommentEntity;
-import ru.skypro.homework.entities.ImageEntity;
 import ru.skypro.homework.entities.UserEntity;
 import ru.skypro.homework.exceptions.AdNotDeletedException;
 import ru.skypro.homework.exceptions.NoAdException;
-import ru.skypro.homework.exceptions.UnauthorizedException;
+import ru.skypro.homework.exceptions.ForbiddenException;
 import ru.skypro.homework.mappers.AdsMapper;
 import ru.skypro.homework.repository.AdsRepository;
 import ru.skypro.homework.repository.ImageRepository;
@@ -183,7 +178,7 @@ public class AdService {
     private void checkAuthority(UserDetails userDetails, AdEntity ad) {
         if (!itISUserAd(userDetails, ad) && !userIsAdmin(userDetails)) {
             log.debug("Attempted unauthorized access id ad={}", ad.getPk());
-            throw new UnauthorizedException("Attempted unauthorized access");
+            throw new ForbiddenException("Attempted unauthorized access");
         }
     }
 }

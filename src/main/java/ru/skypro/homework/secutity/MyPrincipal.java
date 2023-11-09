@@ -3,15 +3,12 @@ package ru.skypro.homework.secutity;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.transaction.annotation.Transactional;
 import ru.skypro.homework.dto.UserMinimalDataDto;
 import ru.skypro.homework.entities.Role;
-import ru.skypro.homework.entities.UserEntity;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 
 public class MyPrincipal implements UserDetails {
@@ -42,13 +39,6 @@ public class MyPrincipal implements UserDetails {
 
     public UserMinimalDataDto getUserMinimalDataDto(){
         return this.userMinimalDataDto;
-    }
-    public Set<Integer> getAdsId(){
-        return userMinimalDataDto.getAds();
-    }
-
-    public Set<Integer> getCommentId(){
-        return userMinimalDataDto.getComments();
     }
 
     @Override

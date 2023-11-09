@@ -2,6 +2,7 @@ package ru.skypro.homework.resttemplates;
 
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
@@ -18,6 +19,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -35,6 +37,8 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 public class TestRestAdAndComment {
     @LocalServerPort
     int port;
+    @Value("${path.avito.image.folder.test}")
+    private String pathToTestImage;
     @Autowired
     private AdsController adsController;
     @Autowired
@@ -94,7 +98,7 @@ public class TestRestAdAndComment {
      * Действия хозяина над собственным объявлением
      */
     @Test
-    void masterOfAdOperations() {
+    void masterOfAdOperations() throws InterruptedException {
         HttpHeaders headerForUpdateImage = getHeaderUser();
         headerForUpdateImage.setContentType(MediaType.valueOf(MediaType.MULTIPART_FORM_DATA_VALUE));
         MultiValueMap<String, Object> formForImage = new LinkedMultiValueMap<>();
@@ -132,7 +136,7 @@ public class TestRestAdAndComment {
                         byte[].class, idAd);
         assertThat(exUpdateImageAdMaster.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertNotNull(Objects.requireNonNull(exUpdateImageAdMaster.getBody()));
-
+        Thread.sleep(2_000);
         ResponseEntity<Void> exDeleteAdMaster =                 // удаляет обявление хозяин USER
                 restTemplate.exchange(
                         deleteAdPath,
@@ -140,7 +144,7 @@ public class TestRestAdAndComment {
                         new HttpEntity<>(getHeaderUser()),
                         Void.class, idAd);
         assertThat(exDeleteAdMaster.getStatusCode()).isEqualTo(HttpStatus.OK);
-
+        Thread.sleep(2_000);
         exGetAdById =                                     // Пытаемся найти удаленное объявление
                 restTemplate.exchange(
                         getInfoAdPath,
@@ -154,7 +158,7 @@ public class TestRestAdAndComment {
      * Хозяин комментарий совершает действия
      */
     @Test
-    void masterOfCommentOperations() {
+    void masterOfCommentOperations() throws InterruptedException {
         refreshDataUser();
         int idAd = idRepo.getIdAd();
         int idComment = idRepo.getIdComment();
@@ -181,7 +185,7 @@ public class TestRestAdAndComment {
      * удалить/редактировать/
      */
     @Test
-    void enemyOfAdOperations() {
+    void enemyOfAdOperations() throws InterruptedException {
         HttpHeaders headerForUpdateImage = getHeaderEnemy();
         headerForUpdateImage.setContentType(MediaType.valueOf(MediaType.MULTIPART_FORM_DATA_VALUE));
         MultiValueMap<String, Object> formForImage = new LinkedMultiValueMap<>();
@@ -221,8 +225,10 @@ public class TestRestAdAndComment {
      * Операции враждебного пользователя над чужими комментариями
      */
     @Test
-    void enemyOfCommentOperations() {
+    @Timeout(value = 10, unit = TimeUnit.SECONDS)
+    void enemyOfCommentOperations() throws InterruptedException {
         refreshDataUser();
+
         int idAd = idRepo.getIdAd();
         int idComment = idRepo.getIdComment();
 
@@ -247,7 +253,8 @@ public class TestRestAdAndComment {
      * Админ совршает действие над пользовательскими данными
      */
     @Test
-    void adminOfAdOperations() {
+    @Timeout(value = 30, unit = TimeUnit.SECONDS)
+    void adminOfAdOperations() throws InterruptedException {
         HttpHeaders headerForUpdateImage = getHeaderAdmin();
         headerForUpdateImage.setContentType(MediaType.valueOf(MediaType.MULTIPART_FORM_DATA_VALUE));
         MultiValueMap<String, Object> formForImage = new LinkedMultiValueMap<>();
@@ -257,7 +264,7 @@ public class TestRestAdAndComment {
 
         refreshDataUser();
         int idAd = idRepo.getIdAd();
-
+        Thread.sleep(2_000);
         ResponseEntity<ExtendedAdDto> exGetAdById =       // Админ находит объявление по id
                 restTemplate.exchange(
                         getInfoAdPath,
@@ -267,7 +274,7 @@ public class TestRestAdAndComment {
 
         assertThat(exGetAdById.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertNotNull(Objects.requireNonNull(exGetAdById.getBody()).getDescription());
-
+        Thread.sleep(2_000);
         ResponseEntity<AdDto> exUpdateAdAdmin =                 // админ обновляет объявление
                 restTemplate.exchange(
                         updateAdPath,
@@ -276,7 +283,7 @@ public class TestRestAdAndComment {
                         AdDto.class, idAd);
         assertThat(exUpdateAdAdmin.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertNotNull(Objects.requireNonNull(exUpdateAdAdmin.getBody()).getTitle());
-
+        Thread.sleep(2_000);
         ResponseEntity<byte[]> exUpdateImageAdAdmin =                 // админ обновляет картинку объявления
                 restTemplate.exchange(
                         updateImageAdPath,
@@ -285,7 +292,7 @@ public class TestRestAdAndComment {
                         byte[].class, idAd);
         assertThat(exUpdateImageAdAdmin.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertNotNull(Objects.requireNonNull(exUpdateImageAdAdmin.getBody()));
-
+        Thread.sleep(2_000);
         ResponseEntity<Void> exDeleteAdAdmin =                 // админ удаляет объявление
                 restTemplate.exchange(
                         deleteAdPath,
@@ -293,7 +300,7 @@ public class TestRestAdAndComment {
                         new HttpEntity<>(getHeaderAdmin()),
                         Void.class, idAd);
         assertThat(exDeleteAdAdmin.getStatusCode()).isEqualTo(HttpStatus.OK);
-
+        Thread.sleep(2_000);
         exGetAdById =                                     // админ пытается найти удаленное объявление
                 restTemplate.exchange(
                         getInfoAdPath,
@@ -307,7 +314,7 @@ public class TestRestAdAndComment {
      * админ  совершает действия над комментарием пользователя
      */
     @Test
-    void adminOfCommentOperations() {
+    void adminOfCommentOperations() throws InterruptedException {
         refreshDataUser();
         int idAd = idRepo.getIdAd();
         int idComment = idRepo.getIdComment();
@@ -346,7 +353,7 @@ public class TestRestAdAndComment {
      * Находим все комментарии по id объявления
      */
     @Test
-    void getComments() {
+    void getComments() throws InterruptedException {
         refreshDataUser();
         int idAd = idRepo.getIdAd();
         ResponseEntity<CommentsDto> exGetAllCommentsById = restTemplate.exchange(
@@ -385,7 +392,7 @@ public class TestRestAdAndComment {
      * Из файла делаем экземпляр FileSystemResource, ибо обычный файл не запихнуть в клиентский запрос
      */
     private FileSystemResource getTestFile() {
-        Path testFile = Paths.get("src/main/resources/image/test.jpg");
+        Path testFile = Paths.get(pathToTestImage);
         return new FileSystemResource(testFile);
     }
 
@@ -419,7 +426,7 @@ public class TestRestAdAndComment {
      * Метод создает от user@gmail.com одно объявление и один комментарий к нему
      * Хранит в себе id объявления и комментария. Чтбы другие тесты могли всегда получать актульные id
      */
-    private void refreshDataUser() {
+    private void refreshDataUser() throws InterruptedException {
         if (idRepo.getIdAd() != null || idRepo.getIdComment() != null) {
             idRepo.clear();
         }
@@ -433,10 +440,12 @@ public class TestRestAdAndComment {
         ResponseEntity<AdDto> exAddAd =
                 restTemplate.exchange(addAdPath, HttpMethod.POST, requestWithDto, AdDto.class);
         int idAd = exAddAd.getBody().getPk();
+        Thread.sleep(2_000);
 
         ResponseEntity<CommentDto> exComment = restTemplate.exchange(addCommentPath, HttpMethod.POST,
                 new HttpEntity<>(commentDto, getHeaderUser()), CommentDto.class, idAd);
         assertNotNull(Objects.requireNonNull(exComment.getBody()).getAuthor());
+        Thread.sleep(2_000);
 
         idRepo.setIdAd(exAddAd.getBody().getPk());
         idRepo.setIdComment(exComment.getBody().getPk());

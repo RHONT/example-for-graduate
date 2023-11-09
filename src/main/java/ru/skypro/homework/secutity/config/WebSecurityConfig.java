@@ -17,6 +17,10 @@ import static org.springframework.security.config.Customizer.withDefaults;
 
 
 @Configuration
+@EnableGlobalMethodSecurity(
+        prePostEnabled = true,
+        securedEnabled = true,
+        jsr250Enabled = true)
 @RequiredArgsConstructor
 public class WebSecurityConfig {
     private final CustomUserDetailsService customUserDetailsService;
@@ -38,9 +42,8 @@ public class WebSecurityConfig {
                         authorization ->
                                 authorization
                                         .mvcMatchers(AUTH_WHITELIST).permitAll()
-                                        .mvcMatchers(HttpMethod.GET, "/ads", "/ads/image/**", "/users/image/**").permitAll()
-                                        .mvcMatchers("/ads/**", "/users/**")
-                                        .authenticated())
+                                        .mvcMatchers(HttpMethod.GET, "/ads/**", "/ads/image/**", "/users/image/**").permitAll()
+                                        .mvcMatchers("/ads/**", "/users/**").authenticated())
                 .cors()
                 .and()
                 .httpBasic(withDefaults());

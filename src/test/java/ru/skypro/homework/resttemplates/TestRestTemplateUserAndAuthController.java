@@ -4,6 +4,7 @@ package ru.skypro.homework.resttemplates;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
@@ -31,6 +32,8 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 public class TestRestTemplateUserAndAuthController {
     @LocalServerPort
     private int port;
+    @Value("${path.avito.image.folder.test}")
+    private String pathToTestImage;
     @Autowired
     private UserController userController;
     @Autowired
@@ -169,7 +172,7 @@ public class TestRestTemplateUserAndAuthController {
 
     /**
      * Возвращаем сущность http без авторизации, нужно для имитации ошибки 401
-     * @return
+
      */
     private HttpEntity<?>  getHttpEmpty(){
         HttpHeaders headers = new HttpHeaders();
@@ -180,7 +183,6 @@ public class TestRestTemplateUserAndAuthController {
 
     /**
      * Возвращаем сущность http с авторизацией, имитация живого пользователя
-     * @return
      */
     private HttpEntity<?>  getHttpWithAuthAndNotBody(){
         HttpHeaders headers = new HttpHeaders();
@@ -192,10 +194,9 @@ public class TestRestTemplateUserAndAuthController {
 
     /**
      * Из файла делаем экземпляр FileSystemResource, ибо обычный файл не запихнуть в клиентский запрос
-     * @return
      */
     private FileSystemResource getTestFile() {
-        Path testFile = Paths.get("src/main/resources/image/test.jpg");
+        Path testFile = Paths.get(pathToTestImage);
         return new FileSystemResource(testFile);
     }
 

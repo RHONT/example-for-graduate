@@ -9,6 +9,7 @@ import org.springframework.web.multipart.MultipartFile;
 import ru.skypro.homework.dto.ImageDto;
 import ru.skypro.homework.entities.ImageEntity;
 
+import java.io.File;
 import java.io.IOException;
 
 @Component
@@ -20,8 +21,10 @@ public interface ImageMapper {
 
     ImageEntity ImageDtoToImageEntity(ImageDto imageDto);
 
-//    @Mapping(target = "data",expression = "java(file.getBytes())")
-    @Mapping(target = "fileSize",expression = "java(file.getSize())")
-    @Mapping(target = "mediaType",expression = "java(file.getContentType())")
-    ImageEntity updateImageEntityFromFile(MultipartFile file, @MappingTarget ImageEntity imageEntity) throws IOException;
+
+    @Mapping(target = "fileSize",expression = "java(file.length())")
+    @Mapping(target = "pathHardStore",expression = "java(file.getPath())")
+    @Mapping(target = "filePath",expression = "java(\"/users/id-image/\"+imageEntity.getId())")
+
+    ImageEntity updateImageEntityFromFile(File file, @MappingTarget ImageEntity imageEntity) throws IOException;
 }
