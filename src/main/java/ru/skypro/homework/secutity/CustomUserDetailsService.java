@@ -38,13 +38,6 @@ public class CustomUserDetailsService implements UserDetailsService {
         userMinimalDataDto.setPassword(user.getPassword());
         userMinimalDataDto.setRoles(user.getRoles());
 
-        userMinimalDataDto.setAds(user.getAdEntityList().stream().
-                map(AdEntity::getPk).collect(Collectors.toSet()));
-
-        userMinimalDataDto.setComments(
-                user.getCommentEntityList().
-                        stream().map(CommentEntity::getCommentId).collect(Collectors.toSet()));
-
         return new MyPrincipal(userMinimalDataDto);
     }
 

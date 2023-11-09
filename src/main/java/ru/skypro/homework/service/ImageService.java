@@ -9,25 +9,19 @@ import org.springframework.core.io.ByteArrayResource;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import ru.skypro.homework.entities.AdEntity;
 import ru.skypro.homework.entities.ImageEntity;
 import ru.skypro.homework.entities.UserEntity;
 import ru.skypro.homework.exceptions.NoAdException;
-import ru.skypro.homework.exceptions.UnauthorizedException;
+import ru.skypro.homework.exceptions.ForbiddenException;
 import ru.skypro.homework.mappers.ImageMapper;
 import ru.skypro.homework.repository.AdsRepository;
 import ru.skypro.homework.repository.ImageRepository;
 import ru.skypro.homework.repository.UsersRepository;
 import ru.skypro.homework.utilclass.JavaFileToMultipartFile;
 
-import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
-import javax.imageio.ImageWriteParam;
-import javax.imageio.ImageWriter;
-import javax.imageio.stream.ImageOutputStream;
-import javax.imageio.stream.MemoryCacheImageOutputStream;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.file.Files;
@@ -203,7 +197,7 @@ public class ImageService {
     private void checkAuthority(UserDetails userDetails, AdEntity ad) {
         if (!itISUserAd(userDetails, ad) && !userIsAdmin(userDetails)) {
             log.debug("Attempted unauthorized access id ad={}", ad.getPk());
-            throw new UnauthorizedException("Attempted unauthorized access");
+            throw new ForbiddenException("Attempted unauthorized access");
         }
     }
 

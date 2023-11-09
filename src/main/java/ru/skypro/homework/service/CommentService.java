@@ -3,7 +3,6 @@ package ru.skypro.homework.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -14,9 +13,8 @@ import ru.skypro.homework.dto.CreateOrUpdateComment;
 import ru.skypro.homework.entities.AdEntity;
 import ru.skypro.homework.entities.CommentEntity;
 import ru.skypro.homework.entities.UserEntity;
-import ru.skypro.homework.exceptions.NoAdException;
 import ru.skypro.homework.exceptions.NoCommentException;
-import ru.skypro.homework.exceptions.UnauthorizedException;
+import ru.skypro.homework.exceptions.ForbiddenException;
 import ru.skypro.homework.mappers.CommentsMapper;
 import ru.skypro.homework.repository.AdsRepository;
 import ru.skypro.homework.repository.CommentsRepository;
@@ -140,7 +138,7 @@ public class CommentService {
     private void checkAuthority(UserDetails userDetails, CommentEntity comment) {
         if (!itISUserComment(userDetails, comment) && !userIsAdmin(userDetails)) {
             log.debug("Attempted unauthorized access id comment={}", comment.getCommentId());
-            throw new UnauthorizedException("Attempted unauthorized access");
+            throw new ForbiddenException("Attempted unauthorized access");
         }
     }
 }

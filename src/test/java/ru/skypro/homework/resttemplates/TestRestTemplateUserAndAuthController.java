@@ -172,7 +172,7 @@ public class TestRestTemplateUserAndAuthController {
 
     /**
      * Возвращаем сущность http без авторизации, нужно для имитации ошибки 401
-     * @return
+
      */
     private HttpEntity<?>  getHttpEmpty(){
         HttpHeaders headers = new HttpHeaders();
@@ -183,7 +183,6 @@ public class TestRestTemplateUserAndAuthController {
 
     /**
      * Возвращаем сущность http с авторизацией, имитация живого пользователя
-     * @return
      */
     private HttpEntity<?>  getHttpWithAuthAndNotBody(){
         HttpHeaders headers = new HttpHeaders();
@@ -195,7 +194,6 @@ public class TestRestTemplateUserAndAuthController {
 
     /**
      * Из файла делаем экземпляр FileSystemResource, ибо обычный файл не запихнуть в клиентский запрос
-     * @return
      */
     private FileSystemResource getTestFile() {
         Path testFile = Paths.get(pathToTestImage);
