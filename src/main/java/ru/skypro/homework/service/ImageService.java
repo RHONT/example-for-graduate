@@ -44,61 +44,24 @@ public class ImageService {
     @Value("${path.avito.image.folder}")
     private String sourceSaveToHard;
 
-    private final String source = "/users/id-image/";
     private final ImageRepository imageRepository;
     private final ImageMapper imageMapper;
     private final AdsRepository adsRepository;
     private final UsersRepository usersRepository;
 
-
-    /**
-     * Сохраняем картинку в базу. Двойное сохранение требуется для установления пути.
-     * Так как оно привязано к id картинки
-     * Example: "/id-image/5"
-     *
-     * @param file
-     * @return
-     * @throws IOException
-     */
-    @Transactional
-    public ImageEntity createImageEntity(MultipartFile file) throws IOException {
-
-        ImageEntity image = new ImageEntity();
-//        imageMapper.updateImageEntityFromFile(file, image);
-        image.setExtension(getExtension(file));
-        return image;
-    }
-
-    private void updatePathImageEntity(ImageEntity imageEntity, MultipartFile file) {
-        imageEntity.setFilePath(source + imageEntity.getId());
-        imageEntity.setPathHardStore
-                (sourceSaveToHard + imageEntity.getId() + imageEntity.getExtension());
-    }
-
-    private void updateAllDataImageEntity(ImageEntity imageEntity, MultipartFile file) throws IOException {
-//        imageMapper.updateImageEntityFromFile(file, imageEntity);
-        imageEntity.setFilePath(source + imageEntity.getId());
-        imageEntity.setExtension(getExtension(file));
-        imageEntity.setPathHardStore
-                (sourceSaveToHard + imageEntity.getId() + imageEntity.getExtension());
-    }
-
     /**
      * Обновляем уже существующую картинку объявления
-     *
-     * @param id   объявления
+     * @param idAd   объявления
      * @param file на обновление
      * @return
      */
-    public byte[] updateImageAd(Integer id, MultipartFile file, UserDetails userDetails) throws IOException {
-        //проверка файла и порезать
-        // и его вернуть в конце.
+    public byte[] updateImageAd(Integer idAd, MultipartFile file, UserDetails userDetails) throws IOException {
         if (file == null) {
             file = new JavaFileToMultipartFile(new File("src/main/resources/image/test.jpg"));
         }
         ImageEntity imageEntity;
         ByteArrayResource resource;
-        Optional<AdEntity> ad = adsRepository.findById(id);
+        Optional<AdEntity> ad = adsRepository.findById(idAd);
         if (ad.isPresent()) {
             checkAuthority(userDetails, ad.get());
             Optional<ImageEntity> optionalImageEntity = Optional.ofNullable(ad.get().getImageEntity());
@@ -120,11 +83,17 @@ public class ImageService {
             }
 
         }
-        log.debug("Ad with id {}, not found", id);
-        throw new NoAdException("Ad with id =" + id + "not found");
+        log.debug("Ad with id {}, not found", idAd);
+        throw new NoAdException("Ad with id =" + idAd + "not found");
 
     }
 
+    /**
+     * Обновление аватара пользователя
+     * @param username
+     * @param file
+     * @throws Exception
+     */
     public void updateImageUser(String username, MultipartFile file) throws Exception {
         if (file == null) {
             file = new JavaFileToMultipartFile(new File("src/main/resources/image/test.jpg"));
@@ -144,15 +113,14 @@ public class ImageService {
         saveImage(file, imageEntity);
     }
 
-//    public ImageEntity createImageEntityAndSaveFileToServer(MultipartFile file){
-//        if (file == null) {
-//            file = new JavaFileToMultipartFile(new File("src/main/resources/image/test.jpg"));
-//        }
-//        ImageEntity imageEntity=new ImageEntity();
-//
-//
-//    }
-
+    /**
+     * Загрузка картинки на сервер
+     * @param imageEntity - сущность из базы. Она приходит сюда пустой. Заполняться
+     *                    будет в методе {@link ImageService#saveImage(MultipartFile, ImageEntity)}
+     * @param file - входящий на контроллер файл
+     * @return
+     * @throws IOException
+     */
     public File loadImageToHard(ImageEntity imageEntity, MultipartFile file) throws IOException {
         String extension = getExtension(file);
         imageEntity.setExtension(extension);
@@ -162,23 +130,24 @@ public class ImageService {
 //        }
         Path pathFile = Path.of(sourceSaveToHard, imageEntity.getId() + extension);
         Files.createDirectories(pathFile.getParent());
-//        Files.deleteIfExists(pathFile);
         log.debug("Path for save Image = " + pathFile);
         File saveImageTo;
         BufferedImage bufferedImage;
         try(InputStream is=file.getInputStream();
-            BufferedInputStream bis=new BufferedInputStream(is,1024);
+            BufferedInputStream bis=new BufferedInputStream(is,4200);
+            OutputStream out = Files.newOutputStream(pathFile,CREATE_NEW);
+            BufferedOutputStream bout = new BufferedOutputStream(out, 4200);
                 ) {
             saveImageTo = new File(String.valueOf(pathFile));
             if (file.getSize() > 100288) {
                 bufferedImage = ImageIO.read(bis);
                 bufferedImage = simpleResizeImage(bufferedImage, 600);
                 ImageIO.write(bufferedImage, extension.substring(1), saveImageTo);
+                bufferedImage.flush();
             } else {
-                bufferedImage = ImageIO.read(file.getInputStream());
-                ImageIO.write(bufferedImage, extension.substring(1), saveImageTo);
+                bis.transferTo(bout);
             }
-            bufferedImage.flush();
+
         } catch (Exception e) {
             throw new RuntimeException("Что-то пошло не так при сохранении файла");
         }
@@ -196,6 +165,12 @@ public class ImageService {
         }
     }
 
+    /**
+     * Вовзращет расширение файла с точкой
+     * Пример: .jpg
+     * @param file
+     * @return
+     */
     private String getExtension(MultipartFile file) {
         String fileName = Objects.requireNonNull(file.getOriginalFilename());
         return fileName.substring(fileName.lastIndexOf("."));
@@ -232,7 +207,13 @@ public class ImageService {
         }
     }
 
-    private BufferedImage simpleResizeImage(BufferedImage originalImage, int targetWidth) throws Exception {
+    /**
+     * Уменьшение картинки при помощи библиоткеи ImgScalar
+     * @param originalImage - картинка оригинальная
+     * @param targetWidth - изменение ширины, высота уменьшаеться по пропорциям
+     * @return
+     */
+    private BufferedImage simpleResizeImage(BufferedImage originalImage, int targetWidth){
         return Scalr.resize(originalImage, targetWidth);
     }
 
