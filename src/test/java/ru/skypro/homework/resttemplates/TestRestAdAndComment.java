@@ -136,7 +136,7 @@ public class TestRestAdAndComment {
                         byte[].class, idAd);
         assertThat(exUpdateImageAdMaster.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertNotNull(Objects.requireNonNull(exUpdateImageAdMaster.getBody()));
-        Thread.sleep(2_000);
+        Thread.sleep(1_000);
         ResponseEntity<Void> exDeleteAdMaster =                 // удаляет обявление хозяин USER
                 restTemplate.exchange(
                         deleteAdPath,
@@ -144,7 +144,7 @@ public class TestRestAdAndComment {
                         new HttpEntity<>(getHeaderUser()),
                         Void.class, idAd);
         assertThat(exDeleteAdMaster.getStatusCode()).isEqualTo(HttpStatus.OK);
-        Thread.sleep(2_000);
+        Thread.sleep(1_000);
         exGetAdById =                                     // Пытаемся найти удаленное объявление
                 restTemplate.exchange(
                         getInfoAdPath,
@@ -264,7 +264,7 @@ public class TestRestAdAndComment {
 
         refreshDataUser();
         int idAd = idRepo.getIdAd();
-        Thread.sleep(2_000);
+
         ResponseEntity<ExtendedAdDto> exGetAdById =       // Админ находит объявление по id
                 restTemplate.exchange(
                         getInfoAdPath,
@@ -274,7 +274,7 @@ public class TestRestAdAndComment {
 
         assertThat(exGetAdById.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertNotNull(Objects.requireNonNull(exGetAdById.getBody()).getDescription());
-        Thread.sleep(2_000);
+
         ResponseEntity<AdDto> exUpdateAdAdmin =                 // админ обновляет объявление
                 restTemplate.exchange(
                         updateAdPath,
@@ -283,7 +283,7 @@ public class TestRestAdAndComment {
                         AdDto.class, idAd);
         assertThat(exUpdateAdAdmin.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertNotNull(Objects.requireNonNull(exUpdateAdAdmin.getBody()).getTitle());
-        Thread.sleep(2_000);
+
         ResponseEntity<byte[]> exUpdateImageAdAdmin =                 // админ обновляет картинку объявления
                 restTemplate.exchange(
                         updateImageAdPath,
@@ -292,7 +292,6 @@ public class TestRestAdAndComment {
                         byte[].class, idAd);
         assertThat(exUpdateImageAdAdmin.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertNotNull(Objects.requireNonNull(exUpdateImageAdAdmin.getBody()));
-        Thread.sleep(2_000);
         ResponseEntity<Void> exDeleteAdAdmin =                 // админ удаляет объявление
                 restTemplate.exchange(
                         deleteAdPath,
@@ -300,7 +299,7 @@ public class TestRestAdAndComment {
                         new HttpEntity<>(getHeaderAdmin()),
                         Void.class, idAd);
         assertThat(exDeleteAdAdmin.getStatusCode()).isEqualTo(HttpStatus.OK);
-        Thread.sleep(2_000);
+
         exGetAdById =                                     // админ пытается найти удаленное объявление
                 restTemplate.exchange(
                         getInfoAdPath,
@@ -440,12 +439,10 @@ public class TestRestAdAndComment {
         ResponseEntity<AdDto> exAddAd =
                 restTemplate.exchange(addAdPath, HttpMethod.POST, requestWithDto, AdDto.class);
         int idAd = exAddAd.getBody().getPk();
-        Thread.sleep(2_000);
 
         ResponseEntity<CommentDto> exComment = restTemplate.exchange(addCommentPath, HttpMethod.POST,
                 new HttpEntity<>(commentDto, getHeaderUser()), CommentDto.class, idAd);
         assertNotNull(Objects.requireNonNull(exComment.getBody()).getAuthor());
-        Thread.sleep(2_000);
 
         idRepo.setIdAd(exAddAd.getBody().getPk());
         idRepo.setIdComment(exComment.getBody().getPk());
