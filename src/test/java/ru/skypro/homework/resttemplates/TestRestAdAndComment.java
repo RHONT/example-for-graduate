@@ -169,6 +169,7 @@ public class TestRestAdAndComment {
                         HttpMethod.PATCH,
                         new HttpEntity<>(commentDto, getHeaderUser()),
                         CommentDto.class, idAd, idComment);
+        Thread.sleep(2000);
         assertThat(exUpdateCommentMaster.getStatusCode()).isEqualTo(HttpStatus.OK);
 
         ResponseEntity<Void> exDeleteCommentMaster =                 //  Хозяин удаляет свой комментарий
@@ -177,6 +178,7 @@ public class TestRestAdAndComment {
                         HttpMethod.DELETE,
                         new HttpEntity<>(getHeaderUser()),
                         Void.class, idAd, idComment);
+        Thread.sleep(2000);
         assertThat(exDeleteCommentMaster.getStatusCode()).isEqualTo(HttpStatus.OK);
     }
 
@@ -271,6 +273,7 @@ public class TestRestAdAndComment {
                         HttpMethod.GET,
                         new HttpEntity<>(getHeaderAdmin()),
                         ExtendedAdDto.class, idAd);
+        Thread.sleep(2000);
 
         assertThat(exGetAdById.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertNotNull(Objects.requireNonNull(exGetAdById.getBody()).getDescription());
@@ -281,6 +284,7 @@ public class TestRestAdAndComment {
                         HttpMethod.PATCH,
                         new HttpEntity<>(updateAdDto, getHeaderAdmin()),
                         AdDto.class, idAd);
+        Thread.sleep(2000);
         assertThat(exUpdateAdAdmin.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertNotNull(Objects.requireNonNull(exUpdateAdAdmin.getBody()).getTitle());
 
@@ -290,6 +294,8 @@ public class TestRestAdAndComment {
                         HttpMethod.PATCH,
                         requestEntityWithImage,
                         byte[].class, idAd);
+        Thread.sleep(2000);
+
         assertThat(exUpdateImageAdAdmin.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertNotNull(Objects.requireNonNull(exUpdateImageAdAdmin.getBody()));
         ResponseEntity<Void> exDeleteAdAdmin =                 // админ удаляет объявление
@@ -298,6 +304,7 @@ public class TestRestAdAndComment {
                         HttpMethod.DELETE,
                         new HttpEntity<>(getHeaderAdmin()),
                         Void.class, idAd);
+        Thread.sleep(2000);
         assertThat(exDeleteAdAdmin.getStatusCode()).isEqualTo(HttpStatus.OK);
 
         exGetAdById =                                     // админ пытается найти удаленное объявление
@@ -306,6 +313,7 @@ public class TestRestAdAndComment {
                         HttpMethod.GET,
                         new HttpEntity<>(getHeaderAdmin()),
                         ExtendedAdDto.class, idAd);
+        Thread.sleep(500);
         assertThat(exGetAdById.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
 
@@ -439,10 +447,12 @@ public class TestRestAdAndComment {
         ResponseEntity<AdDto> exAddAd =
                 restTemplate.exchange(addAdPath, HttpMethod.POST, requestWithDto, AdDto.class);
         int idAd = exAddAd.getBody().getPk();
+        Thread.sleep(2000);
 
         ResponseEntity<CommentDto> exComment = restTemplate.exchange(addCommentPath, HttpMethod.POST,
                 new HttpEntity<>(commentDto, getHeaderUser()), CommentDto.class, idAd);
         assertNotNull(Objects.requireNonNull(exComment.getBody()).getAuthor());
+        Thread.sleep(2000);
 
         idRepo.setIdAd(exAddAd.getBody().getPk());
         idRepo.setIdComment(exComment.getBody().getPk());
