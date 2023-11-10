@@ -125,8 +125,6 @@ public class ImageService {
         BufferedImage bufferedImage;
         try(InputStream is=file.getInputStream();
             BufferedInputStream bis=new BufferedInputStream(is,4000);
-            OutputStream out = Files.newOutputStream(pathFile,CREATE_NEW);
-            BufferedOutputStream bout = new BufferedOutputStream(out, 4000);
                 ) {
             saveImageTo = new File(String.valueOf(pathFile));
             if (file.getSize() > 100288) {
@@ -135,7 +133,11 @@ public class ImageService {
                 ImageIO.write(bufferedImage, extension.substring(1), saveImageTo);
                 bufferedImage.flush();
             } else {
+                OutputStream out = Files.newOutputStream(pathFile,CREATE_NEW);
+                BufferedOutputStream bout = new BufferedOutputStream(out, 4000);
                 bis.transferTo(bout);
+                bout.flush();
+                out.flush();
             }
 
         } catch (Exception e) {
