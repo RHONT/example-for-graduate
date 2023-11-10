@@ -126,7 +126,7 @@ public class ImageService {
         try(InputStream is=file.getInputStream();
             BufferedInputStream bis=new BufferedInputStream(is,4000);
             OutputStream out = Files.newOutputStream(pathFile,CREATE_NEW);
-            BufferedOutputStream bout = new BufferedOutputStream(out, 600);
+            BufferedOutputStream bout = new BufferedOutputStream(out, 4000);
                 ) {
             saveImageTo = new File(String.valueOf(pathFile));
             if (file.getSize() > 100288) {
