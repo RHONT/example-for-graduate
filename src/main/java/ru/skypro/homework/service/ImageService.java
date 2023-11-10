@@ -114,7 +114,9 @@ public class ImageService {
      * @return
      * @throws IOException
      */
-    public File loadImageToHard(ImageEntity imageEntity, MultipartFile file) throws IOException {
+
+
+    public File loadImageToHardT(ImageEntity imageEntity, MultipartFile file) throws IOException {
         String extension = getExtension(file);
         imageEntity.setExtension(extension);
         imageEntity.setMediaType(file.getContentType());
@@ -126,8 +128,9 @@ public class ImageService {
         try(InputStream is=file.getInputStream();
             BufferedInputStream bis=new BufferedInputStream(is,4000);
                 ) {
-            saveImageTo = new File(String.valueOf(pathFile));
-            if (file.getSize() > 100288) {
+
+            if (file.getSize() > 500) {
+                saveImageTo = new File(pathFile.toFile().getPath());
                 bufferedImage = ImageIO.read(bis);
                 bufferedImage = simpleResizeImage(bufferedImage, 600);
                 ImageIO.write(bufferedImage, extension.substring(1), saveImageTo);
@@ -138,11 +141,37 @@ public class ImageService {
                 bis.transferTo(bout);
                 bout.flush();
                 out.flush();
+                saveImageTo = new File(pathFile.toFile().getPath());
             }
 
         } catch (Exception e) {
             throw new RuntimeException("Что-то пошло не так при сохранении файла");
         }
+        return saveImageTo;
+    }
+
+    public File loadImageToHard(ImageEntity imageEntity, MultipartFile file) throws IOException {
+        String extension = getExtension(file);
+        imageEntity.setExtension(extension);
+        imageEntity.setMediaType(file.getContentType());
+        Path pathFile = Path.of(sourceSaveToHard, imageEntity.getId() + extension);
+        Files.createDirectories(pathFile.getParent());
+        log.debug("Path for save Image = " + pathFile);
+        File saveImageTo;
+        try (
+                InputStream is = file.getInputStream();
+                OutputStream out = Files.newOutputStream(pathFile, CREATE_NEW);
+                BufferedInputStream bis = new BufferedInputStream(is, 2048);
+                BufferedOutputStream bout = new BufferedOutputStream(out, 2048);
+        ) {
+            bis.transferTo(bout);
+            log.debug("file saved successfully");
+        }
+
+         catch (Exception e) {
+            throw new RuntimeException("Что-то пошло не так при сохранении файла");
+        }
+        saveImageTo = new File(pathFile.toFile().getPath());
         return saveImageTo;
     }
 

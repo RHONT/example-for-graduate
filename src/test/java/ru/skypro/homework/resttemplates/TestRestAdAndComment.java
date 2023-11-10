@@ -442,6 +442,7 @@ public class TestRestAdAndComment {
         MultiValueMap<String, Object> form = new LinkedMultiValueMap<>();
         form.add("properties", updateAdDto);
         form.add("image", getTestFile());
+        Thread.sleep(2000);
         HttpEntity<MultiValueMap<String, Object>> requestWithDto = new HttpEntity<>(form, headers);
 
         ResponseEntity<AdDto> exAddAd =
