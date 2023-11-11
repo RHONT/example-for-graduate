@@ -116,7 +116,7 @@ public class ImageService {
      */
 
 
-    public File loadImageToHardT(ImageEntity imageEntity, MultipartFile file) throws IOException {
+    public File loadImageToHard(ImageEntity imageEntity, MultipartFile file) throws IOException {
         String extension = getExtension(file);
         imageEntity.setExtension(extension);
         imageEntity.setMediaType(file.getContentType());
@@ -128,7 +128,7 @@ public class ImageService {
         try(InputStream is=file.getInputStream();
             BufferedInputStream bis=new BufferedInputStream(is,4000);
                 ) {
-
+            saveImageTo = new File(pathFile.toFile().getPath());
             if (file.getSize() > 500) {
                 saveImageTo = new File(pathFile.toFile().getPath());
                 bufferedImage = ImageIO.read(bis);
@@ -141,7 +141,7 @@ public class ImageService {
                 bis.transferTo(bout);
                 bout.flush();
                 out.flush();
-                saveImageTo = new File(pathFile.toFile().getPath());
+
             }
 
         } catch (Exception e) {
@@ -150,7 +150,7 @@ public class ImageService {
         return saveImageTo;
     }
 
-    public File loadImageToHard(ImageEntity imageEntity, MultipartFile file) throws IOException {
+    public File loadImageToHardT(ImageEntity imageEntity, MultipartFile file) throws IOException {
         String extension = getExtension(file);
         imageEntity.setExtension(extension);
         imageEntity.setMediaType(file.getContentType());
