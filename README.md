@@ -21,7 +21,7 @@
 </div>
 
 <center><h2>Распределение прав</h2></center>
-
+<center>
 <table style="width: 70%; border-color: red; margin-left: auto; margin-right: auto;">
 <thead>
 <tr style="height: 13px;">
@@ -63,11 +63,19 @@
 </tr>
 </tbody>
 </table>
+</center>
+
+**Особенности проекта**
+Файлы, загружаемые с клиента, сохраняются на жесткий диск
+Директорию можно изменить  
+<pre>
+| файл:     | application.properties  
+| параметр: | path.avito.image.folder=c:/avito/images/
+</pre>  
 
 **Для запуска нужно:**
 
-1. Клонировать проект и настроить значения в файле **[application.properties](src/main/resources/application.properties)
-   **</li>
+1. Клонировать проект и настроить значения в файле [application.properties](src/main/resources/application.properties)
 2. Скачать **[Docker](https://www.docker.com)** и запустить его.
 3. Скачать и запустить Docker образ с помощью
    команды ```docker run -p 3000:3000 ghcr.io/bizinmitya/front-react-avito:latest```.
