@@ -31,24 +31,31 @@ public class WebSecurityConfig {
             "/v3/api-docs",
             "/webjars/**",
             "/login",
-            "/register"
+            "/register",
+            "/ads"
     };
 
-    @Bean
-    @Order(1)
-    protected SecurityFilterChain filterChainPublic(HttpSecurity http) throws Exception {
-        return http.csrf().disable()
-                .authorizeHttpRequests()
-                .antMatchers(HttpMethod.GET,"/ads")
-                .permitAll()
-                .and()
-                .cors()
-                .disable()
-                .build();
-    }
+    /**
+     * Добавление бина для перехвата входа без авторизации не дал результатов.
+     * @param http
+     * @return
+     * @throws Exception
+     */
+//    @Bean
+//    @Order(1)
+//    protected SecurityFilterChain filterChainPublic(HttpSecurity http) throws Exception {
+//        return http.csrf().disable()
+//                .authorizeHttpRequests()
+//                .antMatchers(HttpMethod.GET,"/ads")
+//                .permitAll()
+//                .and()
+//                .cors()
+//                .disable()
+//                .build();
+//    }
 
     @Bean
-    @Order(2)
+//    @Order(2)
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.csrf()
                 .disable()
