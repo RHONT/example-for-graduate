@@ -154,32 +154,6 @@ public class ImageService {
      * @param imageEntity
      * @return
      */
-
-//    public File loadImageToHardT(ImageEntity imageEntity, MultipartFile file) throws IOException {
-//        String extension = getExtension(file);
-//        imageEntity.setExtension(extension);
-//        imageEntity.setMediaType(file.getContentType());
-//        Path pathFile = Path.of(sourceSaveToHard, imageEntity.getId() + extension);
-//        Files.createDirectories(pathFile.getParent());
-//        log.debug("Path for save Image = " + pathFile);
-//        File saveImageTo;
-//        try (
-//                InputStream is = file.getInputStream();
-//                OutputStream out = Files.newOutputStream(pathFile, CREATE_NEW);
-//                BufferedInputStream bis = new BufferedInputStream(is, 2048);
-//                BufferedOutputStream bout = new BufferedOutputStream(out, 2048);
-//        ) {
-//            bis.transferTo(bout);
-//            log.debug("file saved successfully");
-//        }
-//
-//         catch (Exception e) {
-//            throw new RuntimeException("Что-то пошло не так при сохранении файла");
-//        }
-//        saveImageTo = new File(pathFile.toFile().getPath());
-//        return saveImageTo;
-//    }
-
     private ImageEntity saveImage(MultipartFile file, ImageEntity imageEntity) {
         try {
             File fileSaved = loadImageToHard(imageEntity, file);

@@ -32,7 +32,7 @@ public class WebSecurityConfig {
             "/webjars/**",
             "/login",
             "/register",
-            "/ads"
+            "/ads","/users/id-image/**"
     };
 
     /**
@@ -41,21 +41,8 @@ public class WebSecurityConfig {
      * @return
      * @throws Exception
      */
-//    @Bean
-//    @Order(1)
-//    protected SecurityFilterChain filterChainPublic(HttpSecurity http) throws Exception {
-//        return http.csrf().disable()
-//                .authorizeHttpRequests()
-//                .antMatchers(HttpMethod.GET,"/ads")
-//                .permitAll()
-//                .and()
-//                .cors()
-//                .disable()
-//                .build();
-//    }
 
     @Bean
-//    @Order(2)
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.csrf()
                 .disable()
